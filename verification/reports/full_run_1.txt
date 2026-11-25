@@ -1,0 +1,141 @@
+=== AUDIT 21:14:15
+A40    PASS  (13 checks)
+A60    PASS  (13 checks)
+A80    PASS  (13 checks)
+A100   PASS  (13 checks)
+A120   PASS  (13 checks)
+B40    PASS  (13 checks)
+B60    PASS  (13 checks)
+B80    PASS  (13 checks)
+B100   PASS  (13 checks)
+B120   PASS  (13 checks)
+C60    PASS  (13 checks)
+C80    PASS  (13 checks)
+C100   PASS  (13 checks)
+
+13/13 instances pass every check
+=== PRICING 21:32:51
+tests/conformance/test_s3_s4_pricing.py:85: AssertionError
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[0]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[1]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[2]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[3]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[4]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[5]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[6]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[7]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[8]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[9]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[10]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[11]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[12]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[13]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[14]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[15]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[16]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[17]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[18]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[19]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[20]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[21]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[22]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[23]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[24]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[25]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[26]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[27]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[28]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[29]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[30]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[31]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[32]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[33]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[34]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[35]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[36]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[37]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[38]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[39]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[40]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[41]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[42]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_optimum_equals_position_model[43]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[0]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[2]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[4]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[6]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[8]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[10]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[12]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[14]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[16]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[18]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[20]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[22]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[24]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[26]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[28]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[30]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[32]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[34]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[36]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[38]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[40]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_knapsack_bound_matches_paper_steps_and_is_valid[42]
+PASSED tests/conformance/test_s3_s4_pricing.py::test_dr1_removes_exactly_1_to_SD_minus_1
+PASSED tests/conformance/test_s3_s4_pricing.py::test_pricing_respects_deadlines_eq8
+FAILED tests/conformance/test_s3_s4_pricing.py::test_enhancements_actually_fired
+1 failed, 68 passed in 1779.03s (0:29:39)
+=== S2/S3/S5/ALG 22:02:31
+PASSED tests/conformance/test_s2_problem_definition.py::test_cleaning_rule_assumption3
+PASSED tests/conformance/test_s2_problem_definition.py::test_objective_is_total_scheduled_surgery_time
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[deadline]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[surgeon_max]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[surgeon_overlap]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[rooms]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[mandatory]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[room_overlap]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[cleaning]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[horizon]
+PASSED tests/conformance/test_s2_problem_definition.py::test_validator_enforces_every_constraint[twice]
+PASSED tests/conformance/test_s2_problem_definition.py::test_generator_matches_section_6_1
+PASSED tests/conformance/test_s3_master.py::test_master_lp_equals_formulas[A-20-1]
+PASSED tests/conformance/test_s3_master.py::test_master_lp_equals_formulas[B-20-2]
+PASSED tests/conformance/test_s3_master.py::test_master_lp_equals_formulas[C-24-3]
+PASSED tests/conformance/test_s3_master.py::test_column_coefficients_match_definitions
+PASSED tests/conformance/test_s3_master.py::test_reduced_cost_is_the_papers_sigma
+PASSED tests/conformance/test_s3_master.py::test_lp_optimality_no_column_in_rmp_has_positive_sigma
+PASSED tests/conformance/test_s5_cuts_branching.py::test_eq39_as_printed_is_invalid_and_documented_deviation_is_needed
+PASSED tests/conformance/test_s5_cuts_branching.py::test_lifted_cover_cuts_valid_by_enumeration
+PASSED tests/conformance/test_s5_cuts_branching.py::test_cuts_do_not_cut_the_integer_optimum
+PASSED tests/conformance/test_s5_cuts_branching.py::test_branching_rule_order_1_2_3
+PASSED tests/conformance/test_s5_cuts_branching.py::test_branching_children_partition_integer_solutions
+PASSED tests/conformance/test_s5_cuts_branching.py::test_pricing_respects_ryan_foster_restrictions
+PASSED tests/conformance/test_algorithms_1_2.py::test_algorithm1_phase_logic
+PASSED tests/conformance/test_algorithms_1_2.py::test_bounds_are_monotone_and_consistent
+PASSED tests/conformance/test_algorithms_1_2.py::test_algorithm2_best_first_and_child_bounds
+27 passed in 62.49s (0:01:02)
+=== EXACTNESS 22:03:34
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[A12-s1]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[A14-s2]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[A16-s3]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[B12-s4]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[B16-s5]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[B18-s6]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[C14-s7]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[C18-s8]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[C20-s9]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[C16-s10]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[A20-s11]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_monolithic_cpsat[B20-s12]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_time_indexed_mip[tiny6-s1]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_time_indexed_mip[tiny7-s2]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_time_indexed_mip[tiny8-s3]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_time_indexed_mip[tiny8-s4]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_time_indexed_mip[tiny9-s5]
+PASSED tests/conformance/test_exactness.py::test_bpc_vs_time_indexed_mip[tiny10-s6]
+18 passed in 60.76s (0:01:00)
+=== UNIT 22:04:35
+..........                                                               [100%]
+10 passed in 22.81s
+=== END 22:04:59

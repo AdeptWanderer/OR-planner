@@ -56,3 +56,28 @@ def small_instances():
         dict(n_surgeries=14, instance_set="C", seed=6, n_days=2, n_surgeons=4, cleaning_minutes=0),
     ]
     return [generate_instance(**s) for s in specs]
+
+
+def converged_duals(inst, seed=0):
+    """Duals at the end of root column generation (most subproblems have no
+    improving column there - the regime where the knapsack check matters)."""
+    import time
+    from orsched import BPCParams
+    from orsched.bpc import Solver
+    from orsched.pricing import NodeRestrictions
+    s = Solver(inst, BPCParams(cg_time_limit=60, use_cuts=False, workers=2, seed=seed))
+    cols, _ = constructive_heuristic(inst, np.random.default_rng(seed))
+    s.add_pool(cols)
+    res = s.price_and_cut(0, NodeRestrictions(), [], time.time() + 60, prove=True)
+    return res["master"], res["master"].solve_lp()[3]
+
+
+def dr4_instance():
+    """Hand-built day where DR3(c) creates a chain i -> i' -> i'' whose total
+    duration exceeds the room day, so DR4 must remove i (paper Sec. 4.1)."""
+    from orsched.model import Instance, Surgery
+    T = 96
+    surg = [Surgery(0, 40, 0, 0, 0, "S-long"), Surgery(1, 35, 1, 0, 0, "S-mid"),
+            Surgery(2, 30, 2, 0, 0, "S-short"), Surgery(3, 20, 3, 0, 0, "S-x")]
+    A = np.full((4, 1), T, dtype=int)
+    return Instance(surgeries=surg, n_days=1, rooms=[2], slots_per_day=T, surgeon_max=A, cleaning=6, name="dr4")

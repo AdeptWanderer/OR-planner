@@ -17,7 +17,7 @@ the knapsack check (FID) are exact on top of it, which is what is asserted.
 import numpy as np
 import pytest
 
-from conftest import random_duals, real_duals, small_instances
+from conftest import converged_duals, dr4_instance, random_duals, real_duals, small_instances
 from orsched.pricing import knapsack_bound, solve_pricing, start_costs
 from orsched.validate import validate_columns
 from verification.paper_models import paper_fid_bound, position_pricing
@@ -44,6 +44,14 @@ def _cases():
         for _ in range(3):
             d = int(rng.integers(inst.n_days))
             out.append((inst, d) + random_duals(inst, rng))
+        # converged root duals: most days have no improving column (FID regime)
+        m, y = converged_duals(inst)
+        for d in range(inst.n_days):
+            out.append((inst, d) + m.day_duals(y, d))
+        # high room price: many subproblems infeasible w.r.t. (19)
+        d = int(rng.integers(inst.n_days))
+        G, pi6, c = random_duals(inst, rng)
+        out.append((inst, d, G, pi6, c - rng.uniform(40, 120)))
     return out
 
 
@@ -83,6 +91,21 @@ def test_enhancements_actually_fired():
     assert STATS["dr2"] > 0
     assert STATS["dr3"] + STATS["cond"] > 0
     assert STATS["fid"] > 0
+
+
+def test_dr4_fires_and_keeps_the_optimum():
+    """DR3(c) conditions S-long -> S-mid -> S-short (each dominated by the next,
+    the dominator's surgeon can fill the room); 40+35+30 > 96, so DR4 removes
+    S-long.  The pricing optimum must not change."""
+    inst = dr4_instance()
+    G = np.array([20.0, 30.0, 40.0, 1.0])            # shorter case is worth more
+    pi6 = np.zeros((4, inst.slots_per_day))
+    cols, st = solve_pricing(inst, 0, G, pi6, -0.5, time_limit=20, max_columns=10_000)
+    assert st.dr4 >= 1, f"DR4 did not fire: {st}"
+    plain, _ = _exact_prod(inst, 0, G, pi6, -0.5, dom=False, fid=False)
+    ref, _, status, _ = position_pricing(inst, 0, G, pi6, -0.5, time_limit=60, dr1=True)
+    assert status == "OPTIMAL"
+    assert max(st.best_value, 0) == pytest.approx(plain, abs=0.01) == pytest.approx(max(ref, 0), abs=0.01)
 
 
 @pytest.mark.parametrize("k", range(0, len(CASES), 2))
