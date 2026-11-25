@@ -76,8 +76,8 @@ python verification/audit_results.py RESULTS.jsonl CKPT_DIR --crosscheck 120   #
 
 | Paper | Implementation | Verified by | Status |
 |---|---|---|---|
-| DR1: `V_1 = 0` or `V_1 ≥ SD_d` | start-time domains | `test_dr1_removes_exactly_1_to_SD_minus_1`; equivalence test | Faithful |
-| DR2: remove `i` if `Δ^best_id < 0` | yes | equivalence test (optimum unchanged), `test_enhancements_actually_fired` | Faithful |
+| DR1: `V_1 = 0` or `V_1 ≥ SD_d` | start-time domains | `test_dr1_removes_exactly_1_to_SD_minus_1`; equivalence test against the paper model **with DR1 imposed** | Faithful. **Finding:** DR1 is not an exact pruning rule for the subproblem. For some dual vectors the best column starts at slot 1…SD−1 (e.g. slot 2), and DR1 removes it. The paper's proof shows that an optimal *IORPS* solution satisfies DR1, not that every pricing optimum does. DR1 therefore restricts the column set while keeping an optimal integer solution, so all bounds remain valid; the suite counts how often it changes the pricing optimum (`dr1_changed`). |
+| DR2: remove `i` if `Δ^best_id < 0` | yes | equivalence test: optimum unchanged relative to the DR1-restricted problem; `test_enhancements_actually_fired` | Faithful |
 | DR3(a)(b)(c): dominated cases removed or conditioned (`C_i ≤ C_i'`) | yes | same | Adapted. Rules are applied at the root of each CP search (p* = 1), not re-applied dynamically as `W_p` variables are fixed. λ uses the conservative `2·OCT` when infection types differ, because Table 1 needs the predecessor in position p*−1, which is unknown at p* = 1. Only surgeries that stay in the domain can dominate. This prunes less than the paper, never more. |
 | DR4: conditioning chains that can't fit | transitive closure | same | Faithful (applied at p* = 1) |
 | Fast infeasibility detection (24)–(29), steps 1–5 | `knapsack_bound` (greedy over the laminar room/surgeon capacities) + objective cap (29) | `test_knapsack_bound_matches_paper_steps_and_is_valid`: equals the literal steps 1–5 and bounds the true optimum | Faithful at p* = 1. Dynamic re-evaluation for p* > 1 is not done (adapted). |
