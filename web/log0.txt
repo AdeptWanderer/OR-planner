@@ -1,0 +1,35 @@
+Running HiGHS 1.16.0 (git hash: f3f113d): Copyright (c) 2026 under MIT licence terms
+Includes third-party software components, see THIRD_PARTY_NOTICES.md for full details
+A-30-0-default-full 5435.0 5435 0.0 0.8
+A-30-30-default-full 5435.0 5435 0.0 0.4
+A-30-60-default-full 5435.0 5435 0.0 0.5
+A-50-0-default-full 8430.0 8430 0.0 34.3
+A-50-30-default-full 8430.0 8430 0.0 43.8
+A-50-60-default-full 8430.0 8430 0.0 37.9
+A-70-0-default-full 10075.0 10075 0.0 55.5
+A-70-30-default-full 9895.0 10130 2.32 71.5
+A-70-60-default-full 10075.0 10075 0.0 67.9
+B-30-0-default-full 5435.0 5435 0.0 1.4
+B-30-30-default-full 5435.0 5435 0.0 3.2
+B-30-60-default-full 5435.0 5435 0.0 2.6
+B-50-0-default-full 8430.0 8430 0.0 54.5
+B-50-30-default-full 8310.0 8485 2.062 73.7
+B-50-60-default-full 8260.0 8495 2.766 67.5
+B-70-0-default-full 10075.0 10075 0.0 69.7
+B-70-30-default-full 9775.0 10110 3.314 80.8
+B-70-60-default-full 9715.0 10120 4.002 80.9
+C-30-0-default-full 2050.0 2050 0.0 1.2
+C-30-30-default-full 2050.0 2050 0.0 40.6
+C-30-60-default-full 2050.0 2050 0.0 34.6
+C-50-0-default-full 3400.0 3400 0.0 5.0
+C-50-30-default-full 3400.0 3400 0.0 6.5
+C-50-60-default-full 3400.0 3400 0.0 56.7
+C-70-0-default-full 4780.0 4780 0.0 104.4
+C-70-30-default-full 4310.0 4780 9.833 107.5
+C-70-60-default-full 3945.0 4780 17.469 98.1
+A-50-30-default-no_dominance 8430.0 8430 0.0 45.5
+A-50-30-default-no_branching 8430.0 8430 0.0 9.8
+B-50-30-default-no_dominance 8365.0 8495 1.53 67.6
+B-50-30-default-no_branching 8335.0 8590 2.969 22.6
+C-50-30-default-no_dominance 3400.0 3400 0.0 7.5
+C-50-30-default-no_branching 3400.0 3400 0.0 8.4

@@ -1,0 +1,578 @@
+<meta charset="utf-8">
+<title>Surgical Week Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a planning console — control strip on top, summary band, then one working view at a time (tabs routed on the hash). */
+:root {
+  --bg: #f5f7f6;
+  --surface: #ffffff;
+  --surface-2: #eef2f1;
+  --line: #dbe2e0;
+  --fg: #16201e;
+  --fg-2: #56635f;
+  --fg-3: #84908c;
+  --accent: #0f6e63;          /* scrub teal */
+  --accent-soft: #dcefeb;
+  --accent-fg: #ffffff;
+  --good: #1f7a3a; --good-soft: #e1f3e6;
+  --warn: #9a6200; --warn-soft: #fbefd6;
+  --crit: #b3261e; --crit-soft: #fbe3e1;
+  --clean: #c9d1cf;
+  --idle: #e9eeed;
+  --s1: #257de0; --s2: #f47230; --s3: #00b894; --s4: #f2a600;
+  --s5: #ee7fac; --s6: #008a17; --s7: #6a4ce2; --s8: #ec4647;
+  --seq0: #e6f0fd; --seq1: #9dc8f7; --seq2: #338ced; --seq3: #1757ac; --seq4: #0e3d7e;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1514; --surface: #161e1c; --surface-2: #1d2725; --line: #2b3734;
+    --fg: #e6eeec; --fg-2: #a2b0ac; --fg-3: #74827e;
+    --accent: #4fc2b1; --accent-soft: #173a35; --accent-fg: #0b1513;
+    --good: #5fcf7e; --good-soft: #17301f; --warn: #e3a843; --warn-soft: #33270f; --crit: #f07a72; --crit-soft: #3a1a18;
+    --clean: #4a5653; --idle: #222c2a;
+    --s1: #338ced; --s2: #e76624; --s3: #00a888; --s4: #d28e05; --s5: #e24d8b; --s6: #0aac23; --s7: #9887ef; --s8: #eb6263;
+    --seq0: #1a2a3d; --seq1: #1b4f8f; --seq2: #2370cd; --seq3: #6aabf1; --seq4: #cce3fd;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1514; --surface: #161e1c; --surface-2: #1d2725; --line: #2b3734;
+  --fg: #e6eeec; --fg-2: #a2b0ac; --fg-3: #74827e;
+  --accent: #4fc2b1; --accent-soft: #173a35; --accent-fg: #0b1513;
+  --good: #5fcf7e; --good-soft: #17301f; --warn: #e3a843; --warn-soft: #33270f; --crit: #f07a72; --crit-soft: #3a1a18;
+  --clean: #4a5653; --idle: #222c2a;
+  --s1: #338ced; --s2: #e76624; --s3: #00a888; --s4: #d28e05; --s5: #e24d8b; --s6: #0aac23; --s7: #9887ef; --s8: #eb6263;
+  --seq0: #1a2a3d; --seq1: #1b4f8f; --seq2: #2370cd; --seq3: #6aabf1; --seq4: #cce3fd;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 18px; font-weight: 600; }
+h3 { font-size: 14px; font-weight: 600; }
+p { margin: 0; max-width: 72ch; }
+.muted { color: var(--fg-2); }
+.small { font-size: 12.5px; }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-3); font-weight: 600; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+header.top .ref { font-size: 12.5px; color: var(--fg-2); max-width: 60ch; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 14px; min-width: 0; align-content: start; }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+.ctl { display: grid; gap: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+.seg button { font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--fg-2); padding: 6px 12px; cursor: pointer; border-right: 1px solid var(--line); min-height: 32px; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.seg button:hover:not([aria-pressed="true"]) { background: var(--accent-soft); color: var(--fg); }
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note { font-size: 12.5px; color: var(--fg-2); border-left: 3px solid var(--accent); padding: 2px 0 2px 10px; }
+.note code { font-family: var(--font-mono); font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.kpi { background: var(--surface); box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
+.kpi .v { font-family: var(--font-display); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kpi .d { font-size: 12px; color: var(--fg-2); }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.good { background: var(--good-soft); color: var(--good); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.crit { background: var(--crit-soft); color: var(--crit); }
+.chip.neutral { background: var(--surface-2); color: var(--fg-2); }
+
+nav.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+nav.tabs a { text-decoration: none; color: var(--fg-2); padding: 9px 14px; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+nav.tabs a:hover { color: var(--fg); }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 18px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; counter-reset: s; list-style: none; padding: 0; margin: 0; }
+.steps li { counter-increment: s; background: var(--surface-2); border-radius: 8px; padding: 12px 14px 12px 44px; position: relative; }
+.steps li::before { content: counter(s); position: absolute; left: 12px; top: 11px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font-family: var(--font-mono); font-size: 12px; display: grid; place-items: center; font-weight: 600; }
+.steps li b { display: block; margin-bottom: 2px; font-family: var(--font-display); font-weight: 600; }
+
+.scroll-x { overflow-x: auto; min-width: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-weight: 600; color: var(--fg-2); font-size: 12px; background: var(--surface-2); position: sticky; top: 0; }
+td.r, th.r { text-align: right; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover { background: var(--accent-soft); }
+tbody tr.sel { background: var(--accent-soft); }
+.tablebox { max-height: 380px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+
+svg text { fill: var(--fg-2); font-family: var(--font-body); font-size: 11px; }
+svg .axis { stroke: var(--line); }
+svg .grid { stroke: var(--line); stroke-dasharray: 2 3; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--fg-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.tip { position: fixed; pointer-events: none; background: var(--fg); color: var(--bg); padding: 7px 10px; border-radius: 7px; font-size: 12px; line-height: 1.4; max-width: 280px; z-index: 30; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.tree { font-size: 12.5px; display: grid; gap: 2px; max-height: 420px; overflow: auto; }
+.tree div { display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.daypick { display: flex; gap: 6px; flex-wrap: wrap; }
+.trace { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.trace li { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: baseline; }
+.trace li .t { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); }
+.empty { padding: 32px; text-align: center; color: var(--fg-2); }
+@media (max-width: 520px) { .trace li { grid-template-columns: 1fr; gap: 0; } h1 { font-size: 22px; } }
+@media (prefers-reduced-motion: no-preference) { .seg button, nav.tabs a { transition: background .15s, color .15s; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div style="display:grid;gap:4px">
+      <div class="eyebrow">Integrated OR planning &amp; scheduling · 5-day horizon · 8 surgeons</div>
+      <h1>Surgical Week Planner</h1>
+    </div>
+    <p class="ref">Branch-and-price-and-cut with constraint-programming pricing, after Hashemi Doulabi, Rousseau &amp; Pesant, <i>INFORMS J. Computing</i> 28(3), 2016.</p>
+  </header>
+
+  <section class="panel" aria-label="Scenario">
+    <div class="controls">
+      <div class="ctl"><span class="eyebrow">Case mix</span><div class="seg" id="c-set"></div></div>
+      <div class="ctl"><span class="eyebrow">Surgeries</span><div class="seg" id="c-n"></div></div>
+      <div class="ctl"><span class="eyebrow">Room cleaning (OCT)</span><div class="seg" id="c-oct"></div></div>
+      <div class="ctl"><span class="eyebrow">Operating rooms</span><div class="seg" id="c-rooms"></div></div>
+    </div>
+    <p class="note" id="setnote"></p>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Result summary"></section>
+
+  <nav class="tabs" id="tabs">
+    <a href="#how">How it works</a>
+    <a href="#solver">Solver run</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#hospital">Hospital KPIs</a>
+    <a href="#compare">Compare &amp; ablation</a>
+  </nav>
+
+  <main id="view"><div class="empty">Loading the precomputed runs…</div></main>
+
+  <p class="note">Every scenario here was solved ahead of time by the Python solver in <code>or_scheduler/</code> (HiGHS + OR-Tools CP-SAT; limits per run: 30 s column generation, 30 s branching, 15 s final IP, 15 s polishing). To solve your own hospital data live, run <code>streamlit run app.py</code>.</p>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const SETS = {
+  A: "Long cases (2–4 h), 6 rooms per day — surgeons' hours are the bottleneck.",
+  B: "Long cases (2–4 h), rooms sized to demand — rooms are the bottleneck.",
+  C: "Short cases (mostly under 2 h, Pearson III), rooms sized to demand."
+};
+const VARIANTS = { full: "Full method", no_dominance: "No dominance rules / knapsack check", no_cuts: "No cover cuts", no_branching: "No branching (price-and-cut)", no_polish: "No CP-SAT polishing" };
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const S_COL = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
+const state = { set: "B", n: 50, oct: 30, rooms: "default", day: 0 };
+try { const s = JSON.parse(localStorage.getItem("swp-state") || "null"); if (s) Object.assign(state, s); } catch (e) {}
+let DATA = {}, LIST = [];
+const $ = (s, el = document) => el.querySelector(s);
+const fmt = (v, d = 0) => v == null || isNaN(v) ? "—" : Number(v).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const hhmm = m => { const t = 8 * 60 + Math.round(m); return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); };
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const sc = l => `var(${S_COL[l % 8]})`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ---------- tooltip ---------- */
+const tip = $("#tip");
+document.addEventListener("pointermove", e => {
+  const t = e.target.closest("[data-tip]");
+  if (!t) { tip.hidden = true; return; }
+  tip.innerHTML = t.getAttribute("data-tip"); tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+});
+
+/* ---------- derived metrics ---------- */
+function derive(r) {
+  if (r._d) return r._d;
+  const C = r.cases, D = 5, T = r.day_minutes;
+  const rooms = {}; // "d-k" -> sorted items
+  for (const [i, d, k, s] of r.schedule) (rooms[d + "-" + k] ||= []).push({ i, d, k, s, e: s + C[i][2] });
+  const cleaning = [];
+  for (const key in rooms) {
+    const it = rooms[key].sort((a, b) => a.s - b.s);
+    for (let j = 1; j < it.length; j++) if (C[it[j - 1].i][4] !== C[it[j].i][4] && r.oct > 0)
+      cleaning.push({ d: it[j].d, k: it[j].k, s: it[j - 1].e, e: it[j - 1].e + r.oct });
+  }
+  const done = new Set(r.schedule.map(x => x[0]));
+  const mand = C.map((c, i) => i).filter(i => C[i][3] != null);
+  const util = [];
+  for (let d = 0; d < D; d++) for (let k = 0; k < r.rooms_per_day[d]; k++) {
+    const it = rooms[d + "-" + k] || [];
+    const surg = it.reduce((a, x) => a + C[x.i][2], 0);
+    const cl = cleaning.filter(c => c.d === d && c.k === k).length * r.oct;
+    util.push({ d, k, surg, cl, idle: T - surg - cl, open: it.length > 0, n: it.length });
+  }
+  const sload = Array.from({ length: 8 }, () => Array(D).fill(0));
+  for (const [i, d] of r.schedule) sload[C[i][1]][d] += C[i][2];
+  const minutes = r.schedule.reduce((a, x) => a + C[x[0]][2], 0);
+  const open = util.filter(u => u.open);
+  const slack = {};
+  for (const [i, d] of r.schedule) if (C[i][3] != null) { const s = C[i][3] - 1 - d; slack[s] = (slack[s] || 0) + 1; }
+  r._d = { rooms, cleaning, done, mand, util, sload, minutes, slack,
+    mandDone: mand.filter(i => done.has(i)).length,
+    optTotal: C.length - mand.length, optDone: C.filter((c, i) => c[3] == null && done.has(i)).length,
+    utilOpen: open.length ? open.reduce((a, u) => a + u.surg / T, 0) / open.length * 100 : 0,
+    utilAll: minutes / (r.rooms_per_day.reduce((a, b) => a + b, 0) * T) * 100,
+    roomsOpen: open.length };
+  return r._d;
+}
+function deriveHeur(r) {
+  return derive({ ...r, schedule: r.heuristic, _d: null });
+}
+
+/* ---------- controls ---------- */
+function seg(id, opts, key) {
+  const el = $("#" + id);
+  el.innerHTML = opts.map(([v, l, t]) => `<button type="button" data-v="${v}" aria-pressed="${state[key] == v}" ${t ? `title="${esc(t)}"` : ""}>${l}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("button"); if (!b) return; state[key] = isNaN(b.dataset.v) ? b.dataset.v : +b.dataset.v; save(); render(); };
+}
+function save() { try { localStorage.setItem("swp-state", JSON.stringify(state)); } catch (e) {} }
+function current() { return DATA[`${state.set}-${state.n}-${state.oct}-${state.rooms}-full`]; }
+
+/* ---------- small SVG helpers ---------- */
+function lineChart(series, { w = 640, h = 240, yLabel = "", xLabel = "", hlines = [] } = {}) {
+  const pad = { l: 58, r: 16, t: 12, b: 34 };
+  const all = series.flatMap(s => s.pts.map(p => p[1])).concat(hlines.map(h => h.y)).filter(v => v != null && isFinite(v));
+  const xs = series.flatMap(s => s.pts.map(p => p[0]));
+  let y0 = Math.min(...all), y1 = Math.max(...all); if (y1 - y0 < 1) { y0 -= 50; y1 += 50; }
+  const padY = (y1 - y0) * 0.08; y0 -= padY; y1 += padY;
+  const x0 = Math.min(...xs), x1 = Math.max(x0 + 1, ...xs);
+  const X = x => pad.l + (x - x0) / (x1 - x0) * (w - pad.l - pad.r), Y = y => h - pad.b - (y - y0) / (y1 - y0) * (h - pad.t - pad.b);
+  const ticks = niceTicks(y0, y1, 5);
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${esc(yLabel)} by ${esc(xLabel)}">`;
+  for (const t of ticks) s += `<line class="grid" x1="${pad.l}" x2="${w - pad.r}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${pad.l - 8}" y="${Y(t) + 4}" text-anchor="end" class="num">${fmt(t)}</text>`;
+  const xt = niceTicks(x0, x1, Math.min(8, x1 - x0 + 1)).filter(v => Number.isInteger(v));
+  for (const t of xt) s += `<text x="${X(t)}" y="${h - pad.b + 16}" text-anchor="middle" class="num">${t}</text>`;
+  s += `<line class="axis" x1="${pad.l}" x2="${w - pad.r}" y1="${h - pad.b}" y2="${h - pad.b}"/>`;
+  s += `<text x="${(pad.l + w - pad.r) / 2}" y="${h - 4}" text-anchor="middle">${esc(xLabel)}</text>`;
+  s += `<text transform="translate(12 ${(pad.t + h - pad.b) / 2}) rotate(-90)" text-anchor="middle">${esc(yLabel)}</text>`;
+  for (const hl of hlines) s += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${Y(hl.y)}" y2="${Y(hl.y)}" stroke="${hl.color}" stroke-width="1.5" ${hl.dash ? 'stroke-dasharray="5 4"' : ""}/><text x="${w - pad.r - 4}" y="${Y(hl.y) - 5}" text-anchor="end" style="fill:${hl.color}">${esc(hl.label)}</text>`;
+  for (const se of series) {
+    const pts = se.pts.filter(p => p[1] != null && isFinite(p[1]));
+    if (!pts.length) continue;
+    s += `<polyline fill="none" stroke="${se.color}" stroke-width="2" ${se.dash ? 'stroke-dasharray="6 4"' : ""} points="${pts.map(p => X(p[0]) + "," + Y(p[1])).join(" ")}"/>`;
+    for (const p of pts) s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4" fill="${se.color}" stroke="var(--surface)" stroke-width="2"/><circle cx="${X(p[0])}" cy="${Y(p[1])}" r="11" fill="transparent" data-tip="${esc(se.tip(p))}"/>`;
+  }
+  return s + "</svg>";
+}
+function niceTicks(a, b, n) {
+  const span = b - a, step0 = span / Math.max(1, n), mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= step0) || mag * 10;
+  const out = []; for (let v = Math.ceil(a / step) * step; v <= b + 1e-9; v += step) out.push(+v.toFixed(6)); return out;
+}
+function barChart(items, { w = 460, h = 220, yLabel = "", stack = null } = {}) {
+  // items: [{label, values:[{v,color,name}]}]
+  const pad = { l: 52, r: 10, t: 10, b: 28 };
+  const max = Math.max(1, ...items.map(it => it.values.reduce((a, x) => a + x.v, 0)));
+  const ticks = niceTicks(0, max, 4); const top = Math.max(max, ticks[ticks.length - 1]);
+  const bw = (w - pad.l - pad.r) / items.length;
+  const Y = v => h - pad.b - v / top * (h - pad.t - pad.b);
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${esc(yLabel)}">`;
+  for (const t of ticks) s += `<line class="grid" x1="${pad.l}" x2="${w - pad.r}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${pad.l - 8}" y="${Y(t) + 4}" text-anchor="end" class="num">${fmt(t)}</text>`;
+  items.forEach((it, j) => {
+    let acc = 0; const x = pad.l + j * bw + bw * 0.18, ww = bw * 0.64;
+    it.values.forEach((v, q) => {
+      if (v.v <= 0) return;
+      const y = Y(acc + v.v), hh = Y(acc) - Y(acc + v.v) - (q < it.values.length - 1 ? 2 : 0);
+      s += `<rect x="${x}" y="${y}" width="${ww}" height="${Math.max(0, hh)}" rx="${q === it.values.length - 1 || it.values.length === 1 ? 3 : 0}" fill="${v.color}" data-tip="${esc(`<b>${it.label}</b> · ${v.name}: ${fmt(v.v)}${v.unit || ""}`)}"/>`;
+      acc += v.v;
+    });
+    s += `<text x="${x + ww / 2}" y="${h - pad.b + 16}" text-anchor="middle">${esc(it.label)}</text>`;
+  });
+  s += `<line class="axis" x1="${pad.l}" x2="${w - pad.r}" y1="${h - pad.b}" y2="${h - pad.b}"/>`;
+  s += `<text transform="translate(12 ${(pad.t + h - pad.b) / 2}) rotate(-90)" text-anchor="middle">${esc(yLabel)}</text>`;
+  return s + "</svg>";
+}
+
+/* ---------- Gantt ---------- */
+function gantt(r, d) {
+  const dd = derive(r), C = r.cases, K = r.rooms_per_day[d], T = r.day_minutes;
+  const w = 960, rowH = 38, pad = { l: 56, r: 12, t: 22, b: 8 }, h = pad.t + K * rowH + pad.b;
+  const X = m => pad.l + m / T * (w - pad.l - pad.r);
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="min-width:640px" role="img" aria-label="Room schedule for ${DAYS[d]}">
+  <defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="7" fill="rgba(255,255,255,.55)"/></pattern></defs>`;
+  for (let m = 0; m <= T; m += 60) s += `<line class="grid" x1="${X(m)}" x2="${X(m)}" y1="${pad.t - 4}" y2="${h - pad.b}"/><text x="${X(m)}" y="${pad.t - 8}" text-anchor="middle" class="num">${hhmm(m)}</text>`;
+  for (let k = 0; k < K; k++) {
+    const y = pad.t + k * rowH;
+    s += `<rect x="${pad.l}" y="${y + 4}" width="${w - pad.l - pad.r}" height="${rowH - 8}" rx="5" fill="var(--surface-2)"/>`;
+    s += `<text x="${pad.l - 10}" y="${y + rowH / 2 + 4}" text-anchor="end" style="font-weight:600">OR ${k + 1}</text>`;
+    for (const x of (dd.rooms[d + "-" + k] || [])) {
+      const c = C[x.i], x0 = X(x.s), ww = X(x.e) - X(x.s) - 2;
+      const t = `<b>${c[0]}</b> · Surgeon ${c[1] + 1}<br>${hhmm(x.s)}–${hhmm(x.e)} (${c[2]} min)<br>${c[4] ? "Infectious (type " + c[4] + ")" : "Non-infectious"} · ${c[3] ? "deadline " + DAYS[c[3] - 1] : "optional (no deadline this week)"}`;
+      s += `<g data-tip="${esc(t)}"><rect x="${x0 + 1}" y="${y + 6}" width="${ww}" height="${rowH - 12}" rx="4" fill="${sc(c[1])}"/>`;
+      if (c[4]) s += `<rect x="${x0 + 1}" y="${y + 6}" width="${ww}" height="${rowH - 12}" rx="4" fill="url(#hatch)"/>`;
+      if (ww > 34) s += `<text x="${x0 + 1 + ww / 2}" y="${y + rowH / 2 + 4}" text-anchor="middle" style="fill:#fff;font-weight:600;font-family:var(--font-mono);font-size:11px">${c[0]}</text>`;
+      s += `</g>`;
+    }
+    for (const cl of dd.cleaning.filter(c => c.d === d && c.k === k))
+      s += `<rect x="${X(cl.s) + 1}" y="${y + 10}" width="${X(cl.e) - X(cl.s) - 2}" height="${rowH - 20}" rx="3" fill="var(--clean)" data-tip="Cleaning ${hhmm(cl.s)}–${hhmm(cl.e)}"/>`;
+  }
+  return s + "</svg>";
+}
+function surgeonLanes(r, d) {
+  const dd = derive(r), C = r.cases, T = r.day_minutes;
+  const items = r.schedule.filter(x => x[1] === d);
+  const ls = [...new Set(items.map(x => C[x[0]][1]))].sort((a, b) => a - b);
+  if (!ls.length) return `<p class="muted">No cases on this day.</p>`;
+  const w = 960, rowH = 26, pad = { l: 86, r: 12, t: 6, b: 6 }, h = pad.t + ls.length * rowH + pad.b;
+  const X = m => pad.l + m / T * (w - pad.l - pad.r);
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="min-width:640px" role="img" aria-label="Surgeon timelines">`;
+  for (let m = 0; m <= T; m += 60) s += `<line class="grid" x1="${X(m)}" x2="${X(m)}" y1="${pad.t}" y2="${h - pad.b}"/>`;
+  ls.forEach((l, j) => {
+    const y = pad.t + j * rowH;
+    s += `<text x="${pad.l - 10}" y="${y + rowH / 2 + 4}" text-anchor="end">Surgeon ${l + 1}</text>`;
+    for (const [i, , k, st] of items.filter(x => C[x[0]][1] === l)) {
+      const ww = X(st + C[i][2]) - X(st) - 2;
+      s += `<rect x="${X(st) + 1}" y="${y + 4}" width="${ww}" height="${rowH - 8}" rx="3" fill="${sc(l)}" data-tip="${esc(`${C[i][0]} in OR ${k + 1}, ${hhmm(st)}–${hhmm(st + C[i][2])}`)}"/>`;
+      if (ww > 40) s += `<text x="${X(st) + ww / 2}" y="${y + rowH / 2 + 4}" text-anchor="middle" style="fill:#fff;font-size:10.5px;font-weight:600">OR ${k + 1}</text>`;
+    }
+  });
+  return s + "</svg>";
+}
+
+/* ---------- views ---------- */
+function viewHow(r) {
+  const it = r.iters, first = it[0], last = it[it.length - 1];
+  const feas = it.filter(x => x[6] < 1e-6);
+  return `
+  <div style="display:grid;gap:18px">
+  <section class="panel">
+    <h2>The problem</h2>
+    <p>For one week, decide <b>which</b> surgeries are done, on <b>which day</b>, in <b>which operating room</b> and at <b>what time</b>, so that total scheduled surgery time is as large as possible. Cases with a deadline this week are mandatory; the others may be postponed. Each surgeon has a daily cap on operating minutes and can never be in two rooms at once, rooms are shared between surgeons, and a room must be cleaned (OCT) whenever it switches infection type.</p>
+    <p class="muted">A room-day schedule is the building block (a <i>column</i>). Instead of deciding every minute of every room in one giant model, the method keeps a short list of good room-days and lets a master problem pick the best combination, asking a scheduling model for better room-days until none exists.</p>
+  </section>
+  <section class="panel">
+    <h2>The loop, in order</h2>
+    <ol class="steps">
+      <li><b>Starting plan</b>A greedy heuristic fills rooms day by day, earliest deadline first. Those room-days are the first columns.</li>
+      <li><b>Master LP</b>Pick room-days to maximise surgery minutes: each case at most once (mandatory exactly once), rooms per day, surgeon minutes per day, and no surgeon in two rooms in the same 5-minute slot.</li>
+      <li><b>Prices</b>The LP's dual values put a price on every case, room, surgeon-hour and surgeon time slot.</li>
+      <li><b>Cover cuts</b>Lifted minimal cover inequalities on each surgeon's daily cap tighten the LP before pricing.</li>
+      <li><b>Pricing by CP</b>For each day, a constraint-programming model searches for one room schedule whose value at those prices is positive, with cleaning, sequencing and surgeon caps enforced exactly.</li>
+      <li><b>Pruning the search</b>Dominance rules fix start times and drop or condition cases that can't help; a knapsack bound proves many days useless before any search.</li>
+      <li><b>Branching</b>When nothing improves the LP but it is fractional: branch on total cases, cases per surgeon, then "these two cases in the same room or not".</li>
+      <li><b>Final plan and gap</b>An integer program over all generated room-days picks the schedule (optionally polished by CP-SAT). The LP and Lagrangian bounds certify how far from optimal it can be.</li>
+    </ol>
+  </section>
+  <div class="grid2">
+  <section class="panel">
+    <h2>This scenario, step by step</h2>
+    <ul class="trace">
+      <li><span class="t">start</span><span>Heuristic plan schedules <b class="num">${fmt(r.heur)}</b> min of surgery.</span></li>
+      <li><span class="t">root CG it 1</span><span>Master LP ${first[6] > 1e-6 ? "still relies on placeholder variables for some mandatory cases" : `values <b class="num">${fmt(first[1])}</b> min`}; pricing adds <b class="num">${first[4]}</b> new room-days.</span></li>
+      <li><span class="t">root CG it ${last[0]}</span><span>${r.root_converged ? "No room-day can improve the LP anymore" : "Time limit reached"}: LP bound <b class="num">${fmt(r.root_lp)}</b> min, ${fmt(last[3])} columns${r.cuts ? `, ${r.cuts} cover cuts` : ""}.</span></li>
+      <li><span class="t">branching</span><span>${r.nodes > 1 ? `<b class="num">${r.nodes}</b> nodes explored in the branch-and-bound tree.` : "Not needed: solved at the root."}</span></li>
+      ${r.polish ? `<li><span class="t">polishing</span><span>CP-SAT polishing: ${esc(r.polish.status.toLowerCase())}${r.polish.minutes ? ", best " + fmt(r.polish.minutes) + " min" : ""}.</span></li>` : ""}
+      <li><span class="t">result</span><span>Plan of <b class="num">${fmt(r.lb)}</b> min, proven within <b class="num">${fmt(r.gap, 2)}%</b> of the best possible (bound ${fmt(r.ub)} min) in ${fmt(r.time, 1)} s.</span></li>
+    </ul>
+  </section>
+  <section class="panel">
+    <h2>How this build differs from the paper</h2>
+    <ul class="small" style="margin:0;padding-left:18px;display:grid;gap:6px">
+      <li>Open-source solvers: HiGHS for LP/MIP and OR-Tools CP-SAT for pricing, in place of CPLEX and CP Optimizer.</li>
+      <li>Pricing uses optional interval variables; an extra makespan constraint (case minutes plus one cleaning per infection switch fit in the day) speeds up short-case days.</li>
+      <li>Cover-cut lifting uses Balas' coefficients built from the <i>largest</i> cover weights; eq. (39) as printed can cut off valid schedules.</li>
+      <li>A valid upper bound is reported at every iteration, so a time-limited run still gives an honest gap.</li>
+      <li>Optional CP-SAT polishing of the final plan. This helps on short-case weeks, where room-days are hard to combine.</li>
+    </ul>
+  </section>
+  </div>
+  </div>`;
+}
+
+function viewSolver(r) {
+  const it = r.iters;
+  const lp = it.map(x => [x[0], x[6] < 1e-6 ? x[1] : null]);
+  const bd = it.map(x => [x[0], Math.min(x[2], r.ub * 1.6)]);
+  const p = r.pricing;
+  const line = lineChart([
+    { pts: lp, color: "var(--s1)", tip: q => `Iteration ${q[0]}<br>Master LP ${fmt(q[1])} min` },
+    { pts: bd, color: "var(--s2)", dash: true, tip: q => `Iteration ${q[0]}<br>Upper bound ${fmt(q[1])} min` }
+  ], { yLabel: "minutes", xLabel: "column-generation iteration (root node)", hlines: [
+    { y: r.lb, color: "var(--s3)", label: "best plan " + fmt(r.lb) },
+    { y: r.heur, color: "var(--fg-3)", label: "heuristic " + fmt(r.heur), dash: true }] });
+  const cols = barChart(p.cols_by_day.map((v, d) => ({ label: DAYS[d], values: [{ v, color: "var(--s1)", name: "columns" }] })), { yLabel: "room-days generated" });
+  const statusChip = s => ({ integral: "good", pruned: "neutral", branched: "neutral", "leaf-IP": "warn", infeasible: "crit", processed: "neutral" }[s] || "neutral");
+  const kids = {}; for (const n of r.node_log) (kids[n[1] ?? "root"] ||= []).push(n);
+  let tree = "";
+  const walk = (n, depth) => {
+    tree += `<div style="padding-left:${depth * 16}px"><span class="mono muted">#${n[0]}</span> ${esc(n[2])} <span class="chip ${statusChip(n[3])}">${esc(n[3])}</span> <span class="num muted">${n[4] == null ? "" : "bound " + fmt(n[4])}</span></div>`;
+    for (const c of kids[n[0]] || []) walk(c, depth + 1);
+  };
+  for (const n of kids["root"] || []) walk(n, 0);
+  const rows = [
+    ["DR1 · start times removed", p.dr1, "%"], ["DR2 · cases removed", p.dr2, "%"], ["DR3 · dominated cases removed", p.dr3, "%"],
+    ["DR4 · chains that can't fit", p.dr4, "%"], ["Conditioned cases (C_i ≤ C_i′)", p.cond, "%"],
+    ["Days proven useless by knapsack bound", p.fid1, "%"], ["Days emptied by dominance", p.fid2, "%"],
+    ["Searches stopped at knapsack bound", p.knap, "%"], ["CP pricing calls", p.calls, ""], ["CP time", p.cp_time, " s"]];
+  return `<div style="display:grid;gap:18px">
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2>Convergence at the root node</h2>
+    <div class="legend"><span><i style="background:var(--s1)"></i>Master LP</span><span><i style="background:var(--s2)"></i>Valid upper bound (Lagrangian)</span><span><i style="background:var(--s3)"></i>Best plan</span></div></div>
+    <div class="scroll-x">${line}</div>
+    <p class="small muted">The LP climbs as better room-days arrive; the bound falls as pricing proves that nothing much better exists. Iterations where the master still leans on placeholder variables are left out of the LP line.</p>
+  </section>
+  <div class="grid2">
+    <section class="panel"><h2>Pricing enhancements</h2><p class="small muted">Averages over all CP pricing calls, in the format of the paper's Table 2.</p>
+      <div class="scroll-x"><table><tbody>${rows.map(([l, v, u]) => `<tr><td>${l}</td><td class="r num">${fmt(v, u === "%" ? 1 : u === " s" ? 1 : 0)}${u}</td></tr>`).join("")}</tbody></table></div></section>
+    <section class="panel"><h2>Room-days generated per day</h2><div>${cols}</div>
+      <p class="small muted">${fmt(r.columns)} columns and ${r.cuts} cover cuts in total.</p></section>
+  </div>
+  <section class="panel"><h2>Branch-and-bound tree <span class="muted" style="font-weight:500">· ${r.nodes} node${r.nodes > 1 ? "s" : ""}</span></h2>
+    ${r.nodes > 1 ? `<div class="tree">${tree}</div>${r.node_log.length < r.nodes ? `<p class="small muted">Showing the first ${r.node_log.length} nodes.</p>` : ""}` : `<p class="muted">The root LP was enough: no branching was needed.</p>`}
+  </section></div>`;
+}
+
+function viewSchedule(r) {
+  const d = state.day, C = r.cases;
+  const used = [...new Set(r.schedule.map(x => C[x[0]][1]))].sort((a, b) => a - b);
+  const legend = used.map(l => `<span><i style="background:${sc(l)}"></i>Surgeon ${l + 1}</span>`).join("") +
+    `<span><i style="background:var(--s1);background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.6) 0 2px,transparent 2px 5px)"></i>Infectious case</span><span><i style="background:var(--clean)"></i>Cleaning</span>`;
+  const rows = r.schedule.filter(x => x[1] === d).sort((a, b) => a[2] - b[2] || a[3] - b[3]);
+  return `<div style="display:grid;gap:18px">
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center">
+      <h2>${["Monday","Tuesday","Wednesday","Thursday","Friday"][d]} · operating rooms</h2>
+      <div class="seg" id="c-day">${DAYS.map((n, i) => `<button type="button" data-v="${i}" aria-pressed="${i === d}">${n}</button>`).join("")}</div>
+    </div>
+    <div class="legend">${legend}</div>
+    <div class="scroll-x">${gantt(r, d)}</div>
+  </section>
+  <section class="panel"><h2>Surgeon timelines</h2><p class="small muted">Each surgeon's day across rooms. No two bars overlap.</p><div class="scroll-x">${surgeonLanes(r, d)}</div></section>
+  <section class="panel"><h2>Case list · ${DAYS[d]}</h2>
+    <div class="tablebox"><table><thead><tr><th>Room</th><th>Start</th><th>End</th><th>Case</th><th>Surgeon</th><th class="r">Minutes</th><th>Infection</th><th>Deadline</th></tr></thead><tbody>
+    ${rows.map(([i, , k, s]) => `<tr><td>OR ${k + 1}</td><td class="num">${hhmm(s)}</td><td class="num">${hhmm(s + C[i][2])}</td><td class="mono">${C[i][0]}</td><td>Surgeon ${C[i][1] + 1}</td><td class="r num">${C[i][2]}</td><td>${C[i][4] ? `<span class="chip warn">type ${C[i][4]}</span>` : `<span class="muted">none</span>`}</td><td>${C[i][3] ? (C[i][3] - 1 === d ? `<span class="chip crit">due today</span>` : DAYS[C[i][3] - 1]) : `<span class="muted">optional</span>`}</td></tr>`).join("") || `<tr><td colspan="8" class="muted">No cases on this day.</td></tr>`}
+    </tbody></table></div></section></div>`;
+}
+
+function viewHospital(r) {
+  const dd = derive(r), hh = deriveHeur(r), C = r.cases, T = r.day_minutes;
+  // heatmap
+  const K = Math.max(...r.rooms_per_day), cw = 92, ch = 34, pad = { l: 52, t: 22 };
+  const seq = ["--seq0", "--seq1", "--seq2", "--seq3", "--seq4"];
+  let hm = `<svg viewBox="0 0 ${pad.l + 5 * cw + 6} ${pad.t + K * ch + 6}" width="100%" role="img" aria-label="Room utilisation">`;
+  DAYS.forEach((n, d) => hm += `<text x="${pad.l + d * cw + cw / 2}" y="14" text-anchor="middle">${n}</text>`);
+  for (let k = 0; k < K; k++) hm += `<text x="${pad.l - 8}" y="${pad.t + k * ch + ch / 2 + 4}" text-anchor="end">OR ${k + 1}</text>`;
+  for (const u of dd.util) {
+    const p = u.surg / T, b = Math.min(4, Math.floor(p * 5)), dark = b >= 3;
+    hm += `<g data-tip="${esc(`OR ${u.k + 1} · ${DAYS[u.d]}<br>${fmt(p * 100)}% surgery · ${u.n} cases<br>${u.cl} min cleaning · ${u.idle} min idle`)}"><rect x="${pad.l + u.d * cw + 1}" y="${pad.t + u.k * ch + 1}" width="${cw - 2}" height="${ch - 2}" rx="4" fill="${u.open ? `var(${seq[b]})` : "var(--idle)"}"/>
+    <text x="${pad.l + u.d * cw + cw / 2}" y="${pad.t + u.k * ch + ch / 2 + 4}" text-anchor="middle" class="num" style="${dark ? "fill:#fff" : "fill:var(--fg)"};font-weight:500">${u.open ? fmt(p * 100) + "%" : "closed"}</text></g>`;
+  }
+  hm += "</svg>";
+  const spend = barChart(DAYS.map((n, d) => { const u = dd.util.filter(x => x.d === d); return { label: n, values: [
+    { v: u.reduce((a, x) => a + x.surg, 0), color: "var(--s1)", name: "surgery", unit: " min" },
+    { v: u.reduce((a, x) => a + x.cl, 0), color: "var(--clean)", name: "cleaning", unit: " min" },
+    { v: u.reduce((a, x) => a + x.idle, 0), color: "var(--idle)", name: "idle (incl. closed rooms)", unit: " min" }] }; }), { yLabel: "minutes" });
+  // surgeon workload
+  const sw = 460, sRow = 26, sPad = { l: 84, r: 54 };
+  const maxA = Math.max(...r.surgeon_max.map(a => a.reduce((x, y) => x + y, 0)));
+  let sv = `<svg viewBox="0 0 ${sw} ${8 * sRow + 8}" width="100%" role="img" aria-label="Surgeon workload">`;
+  for (let l = 0; l < 8; l++) {
+    const A = r.surgeon_max[l].reduce((a, b) => a + b, 0), S = dd.sload[l].reduce((a, b) => a + b, 0), y = 4 + l * sRow;
+    const X = v => sPad.l + v / maxA * (sw - sPad.l - sPad.r);
+    sv += `<text x="${sPad.l - 8}" y="${y + sRow / 2 + 4}" text-anchor="end">Surgeon ${l + 1}</text>
+    <rect x="${sPad.l}" y="${y + 4}" width="${X(A) - sPad.l}" height="${sRow - 8}" rx="3" fill="var(--idle)" data-tip="Surgeon ${l + 1}: ${fmt(A)} min available this week"/>
+    <rect x="${sPad.l}" y="${y + 8}" width="${Math.max(0, X(S) - sPad.l)}" height="${sRow - 16}" rx="2" fill="${sc(l)}" data-tip="${esc(`Surgeon ${l + 1}: ${fmt(S)} of ${fmt(A)} min (${fmt(S / A * 100)}%)<br>${dd.sload[l].map((v, d) => DAYS[d] + " " + v).join(" · ")}`)}"/>
+    <text x="${X(A) + 6}" y="${y + sRow / 2 + 4}" class="num">${fmt(S / A * 100)}%</text>`;
+  }
+  sv += "</svg>";
+  const sk = Object.keys(dd.slack).map(Number).sort((a, b) => a - b);
+  const slack = sk.length ? barChart(sk.map(s => ({ label: s === 0 ? "on deadline" : s + " d early", values: [{ v: dd.slack[s], color: "var(--s3)", name: "mandatory cases" }] })), { yLabel: "cases" }) : `<p class="muted">No mandatory cases.</p>`;
+  const wait = C.map((c, i) => [c, i]).filter(([, i]) => !dd.done.has(i)).sort((a, b) => (a[0][3] ?? 99) - (b[0][3] ?? 99));
+  const cmp = [
+    ["Surgery minutes", dd.minutes, hh.minutes, 0, true],
+    ["OR utilisation, open rooms (%)", dd.utilOpen, hh.utilOpen, 1, true],
+    ["OR utilisation, all rooms (%)", dd.utilAll, hh.utilAll, 1, true],
+    ["Cases scheduled", dd.done.size, hh.done.size, 0, true],
+    ["Optional cases brought forward", dd.optDone, hh.optDone, 0, true],
+    ["Rooms opened", dd.roomsOpen, hh.roomsOpen, 0, false],
+    ["Cleanings", dd.cleaning.length, hh.cleaning.length, 0, false]];
+  return `<div style="display:grid;gap:18px">
+  <div class="grid2">
+    <section class="panel"><h2>Room utilisation</h2><p class="small muted">Share of each room-day spent operating.</p><div>${hm}</div></section>
+    <section class="panel"><h2>Where OR time goes</h2>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Surgery</span><span><i style="background:var(--clean)"></i>Cleaning</span><span><i style="background:var(--idle);outline:1px solid var(--line)"></i>Idle or closed</span></div><div>${spend}</div></section>
+    <section class="panel"><h2>Surgeon workload this week</h2><p class="small muted">Scheduled minutes against each surgeon's weekly cap.</p><div>${sv}</div></section>
+    <section class="panel"><h2>Mandatory cases vs. deadline</h2><p class="small muted">How many days before its deadline each mandatory case is done.</p><div>${slack}</div></section>
+  </div>
+  <div class="grid2">
+    <section class="panel"><h2>Optimised plan vs. greedy heuristic</h2>
+      <div class="scroll-x"><table><thead><tr><th>Measure</th><th class="r">Optimised</th><th class="r">Heuristic</th><th class="r">Change</th></tr></thead><tbody>
+      ${cmp.map(([l, a, b, dg, up]) => { const dv = a - b, good = up ? dv > 0 : dv < 0; return `<tr><td>${l}</td><td class="r num">${fmt(a, dg)}</td><td class="r num">${fmt(b, dg)}</td><td class="r">${Math.abs(dv) < 1e-9 ? `<span class="chip neutral">same</span>` : `<span class="chip ${good ? "good" : "warn"}">${dv > 0 ? "+" : ""}${fmt(dv, dg)}</span>`}</td></tr>`; }).join("")}
+      </tbody></table></div></section>
+    <section class="panel"><h2>Waiting list after this plan <span class="muted" style="font-weight:500">· ${wait.length}</span></h2>
+      ${wait.length ? `<div class="tablebox"><table><thead><tr><th>Case</th><th>Surgeon</th><th class="r">Minutes</th><th>Status</th></tr></thead><tbody>
+      ${wait.map(([c]) => `<tr><td class="mono">${c[0]}</td><td>Surgeon ${c[1] + 1}</td><td class="r num">${c[2]}</td><td>${c[3] ? `<span class="chip crit">mandatory, due ${DAYS[c[3] - 1]}</span>` : `<span class="chip neutral">postponed to next week</span>`}</td></tr>`).join("")}
+      </tbody></table></div>` : `<p class="muted">Every case is scheduled this week.</p>`}</section>
+  </div></div>`;
+}
+
+function viewCompare(r) {
+  const abl = Object.keys(VARIANTS).map(v => [v, DATA[`${state.set}-50-30-default-${v}`]]).filter(x => x[1]);
+  const grid = LIST.filter(x => x.variant === "full" && x.set === state.set).sort((a, b) => a.n - b.n || a.oct - b.oct || (a.rooms > b.rooms ? 1 : -1));
+  const paper = [["Compact IP (CPLEX)", 46.94], ["Pure CP", 17.68], ["CP then IP", 11.84], ["Original column generation", 9.90], ["Enhanced column generation", 7.82], ["Branch-and-price", 5.36], ["Price-and-cut", 4.76], ["Branch-and-price-and-cut", 2.81]];
+  const maxP = 50;
+  return `<div style="display:grid;gap:18px">
+  <div class="grid2">
+  <section class="panel"><h2>Ablation · set ${state.set}, 50 cases, 30 min cleaning</h2>
+    <p class="small muted">Same instance, one component switched off at a time.</p>
+    <div class="scroll-x"><table><thead><tr><th>Configuration</th><th class="r">Plan (min)</th><th class="r">Bound</th><th class="r">Gap</th><th class="r">Nodes</th><th class="r">Time (s)</th></tr></thead><tbody>
+    ${abl.map(([v, x]) => `<tr><td>${VARIANTS[v]}</td><td class="r num">${fmt(x.lb)}</td><td class="r num">${fmt(x.ub)}</td><td class="r num">${fmt(x.gap, 2)}%</td><td class="r num">${x.nodes}</td><td class="r num">${fmt(x.time, 1)}</td></tr>`).join("")}
+    </tbody></table></div></section>
+  <section class="panel"><h2>Paper's reported average gaps</h2><p class="small muted">Table 6–7 of the paper, 65 instances, up to ~5 h each.</p>
+    <div style="display:grid;gap:6px">${paper.map(([n, g]) => `<div style="display:grid;grid-template-columns:minmax(0,190px) 1fr 52px;gap:10px;align-items:center" data-tip="${esc(n + ": " + g + "% average gap")}"><span class="small">${n}</span><span style="background:var(--surface-2);border-radius:3px;height:12px;display:block"><span style="display:block;height:12px;border-radius:3px;width:${g / maxP * 100}%;background:${n === "Branch-and-price-and-cut" ? "var(--accent)" : "var(--fg-3)"}"></span></span><span class="num small" style="text-align:right">${g.toFixed(2)}%</span></div>`).join("")}</div></section>
+  </div>
+  <section class="panel"><h2>All set ${state.set} scenarios</h2><p class="small muted">Click a row to load it.</p>
+    <div class="tablebox"><table><thead><tr><th class="r">Cases</th><th class="r">Cleaning</th><th>Rooms</th><th class="r">Heuristic</th><th class="r">Plan</th><th class="r">Bound</th><th class="r">Gap</th><th class="r">Time (s)</th><th>Check</th></tr></thead><tbody id="gridrows">
+    ${grid.map(x => `<tr class="click ${x === r ? "sel" : ""}" data-k="${x.key}"><td class="r num">${x.n}</td><td class="r num">${x.oct} min</td><td>${x.rooms_per_day[0]} / day${x.rooms === "tight" ? " (tight)" : ""}</td><td class="r num">${fmt(x.heur)}</td><td class="r num">${fmt(x.lb)}</td><td class="r num">${fmt(x.ub)}</td><td class="r"><span class="chip ${x.gap < 0.01 ? "good" : x.gap < 5 ? "neutral" : "warn"}">${fmt(x.gap, 2)}%</span></td><td class="r num">${fmt(x.time, 1)}</td><td>${x.errors ? `<span class="chip crit">${x.errors} violations</span>` : `<span class="chip good">valid</span>`}</td></tr>`).join("")}
+    </tbody></table></div></section></div>`;
+}
+
+/* ---------- render ---------- */
+function render() {
+  seg("c-set", [["A", "A · long, 6 rooms", SETS.A], ["B", "B · long, sized rooms", SETS.B], ["C", "C · short cases", SETS.C]], "set");
+  seg("c-n", [[30, "30"], [50, "50"], [70, "70"]], "n");
+  seg("c-oct", [[0, "none"], [30, "30 min"], [60, "60 min"]], "oct");
+  seg("c-rooms", [["default", "standard"], ["tight", "one fewer per day"]], "rooms");
+  const r = current();
+  $("#setnote").textContent = SETS[state.set] + (r ? ` This week: ${r.rooms_per_day[0]} rooms per day, ${r.cases.length} cases, ${r.cases.filter(c => c[3] != null).length} due this week.` : "");
+  const tab = (location.hash || "#how").slice(1);
+  document.querySelectorAll("#tabs a").forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + tab ? "page" : "false"));
+  if (!r) { $("#kpis").innerHTML = ""; $("#view").innerHTML = `<div class="empty">This combination has not been computed.</div>`; return; }
+  const dd = derive(r), cap = r.rooms_per_day.reduce((a, b) => a + b, 0) * r.day_minutes;
+  const gapChip = r.gap < 0.01 ? `<span class="chip good">proven optimal</span>` : r.gap < 5 ? `<span class="chip neutral">near-optimal</span>` : `<span class="chip warn">gap above 5%</span>`;
+  $("#kpis").innerHTML = [
+    ["Surgery scheduled", fmt(r.lb) + " min", `${fmt(dd.minutes / cap * 100, 1)}% of OR capacity`],
+    ["Optimality gap", fmt(r.gap, 2) + "%", gapChip + ` bound ${fmt(r.ub)}`],
+    ["Gain vs. heuristic", "+" + fmt(r.lb - r.heur) + " min", `heuristic ${fmt(r.heur)} min`],
+    ["Mandatory cases", `${dd.mandDone}/${dd.mand.length}`, dd.mandDone === dd.mand.length ? `<span class="chip good">all deadlines met</span>` : `<span class="chip crit">deadlines missed</span>`],
+    ["Optional brought forward", `${dd.optDone}/${dd.optTotal}`, "cases without a deadline this week"],
+    ["Open-room utilisation", fmt(dd.utilOpen, 1) + "%", `${dd.roomsOpen} of ${cap / r.day_minutes} room-days opened`],
+    ["Solve time", fmt(r.time, 1) + " s", `${r.nodes} B&B node${r.nodes > 1 ? "s" : ""} · ${fmt(r.columns)} columns`]
+  ].map(([l, v, d]) => `<div class="kpi"><span class="eyebrow">${l}</span><span class="v">${v}</span><span class="d">${d}</span></div>`).join("");
+  const views = { how: viewHow, solver: viewSolver, schedule: viewSchedule, hospital: viewHospital, compare: viewCompare };
+  $("#view").innerHTML = (views[tab] || viewHow)(r);
+  const dayseg = $("#c-day"); if (dayseg) dayseg.onclick = e => { const b = e.target.closest("button"); if (!b) return; state.day = +b.dataset.v; save(); render(); };
+  const gr = $("#gridrows"); if (gr) gr.onclick = e => { const tr = e.target.closest("tr[data-k]"); if (!tr) return; const x = DATA[tr.dataset.k]; Object.assign(state, { n: x.n, oct: x.oct, rooms: x.rooms }); save(); render(); };
+}
+addEventListener("hashchange", render);
+
+fetch("scenarios.json").then(r => r.json()).then(arr => {
+  LIST = arr; for (const r of arr) DATA[r.key] = r; render();
+}).catch(err => { $("#view").innerHTML = `<div class="empty">The scenario data could not be loaded (${esc(err.message)}). Reload the page to try again.</div>`; });
+</script>
