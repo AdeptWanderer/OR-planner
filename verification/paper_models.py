@@ -27,12 +27,14 @@ SCALE = 1000.0
 # Section 3.2: position-based CP model of the pricing subproblem
 # --------------------------------------------------------------------------
 def position_pricing(inst, d: int, G: np.ndarray, pi6: np.ndarray, const: float,
-                     time_limit: float = 60.0, n_positions: Optional[int] = None):
+                     time_limit: float = 60.0, n_positions: Optional[int] = None, dr1: bool = False):
     """Solve  max { sum_p G[W_p] - sum_p pi*[W_p][V_p] - pi4_d }  s.t. (8)-(15).
 
     G      : G_di for i = 0..n-1 (the paper's G_d[i]; position value 0 -> 0)
     pi6    : coloring duals pi^(6)_{d,l,t} >= 0, shape (L, T)
     const  : -pi^(4)_d  (we pass the constant term directly)
+
+    dr1    : also impose Dominance Rule 1, (V_1 == 0) or (V_1 >= SD_d).
 
     Returns (value of best schedule or None, items, status, proven upper bound).
     The surgery index in the paper is 1-based with 0 = empty; we map surgery i
@@ -98,6 +100,11 @@ def position_pricing(inst, d: int, G: np.ndarray, pi6: np.ndarray, const: float,
             m.add_element(W[p], tl, v)
             terms.append(v)
         m.add(sum(terms) <= int(inst.surgeon_max[l, d]))
+    if dr1:                                                            # Dominance Rule 1
+        sd = min([surg[i].duration for i in elig] or [T])
+        b = m.new_bool_var("v1zero")
+        m.add(V[0] == 0).only_enforce_if(b)
+        m.add(V[0] >= sd).only_enforce_if(b.Not())
     for p in range(1, n):                                              # (15)
         m.add(V[p] == V[p - 1] + tW[p - 1]).only_enforce_if(isz[p])
     # objective (17)

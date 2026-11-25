@@ -2,9 +2,17 @@
 
 The production pricing uses CP-SAT optional intervals; the paper uses a
 position-based CP model (8)-(15) with objective (17).  These tests show that
-both give the SAME optimal value on realistic and adversarial dual vectors,
-with and without the dominance rules / knapsack check, so the enhancements
-never change the subproblem optimum (they only prune).
+both give the SAME optimal value on realistic and adversarial dual vectors:
+
+* without enhancements: production == literal position model;
+* with all enhancements: production == literal position model + DR1.
+
+Dominance Rule 1 is NOT an exact pruning rule for the subproblem: the paper's
+proof shows an optimal IORPS solution satisfies it, not that the pricing
+optimum does for every dual vector (found by this suite: e.g. an optimal
+column starting at slot 2).  It is a restriction of the column set that keeps
+an optimal integer solution, so the method's bounds stay valid.  DR2-DR4 and
+the knapsack check (FID) are exact on top of it, which is what is asserted.
 """
 import numpy as np
 import pytest
@@ -42,28 +50,30 @@ def _cases():
 CASES = _cases()
 
 
+def _check(ref, status, bound, v, tol, what):
+    ref_pos = max(ref if ref is not None else 0.0, 0.0)
+    if status == "OPTIMAL":
+        assert v == pytest.approx(ref_pos, abs=tol), f"{what}: {v} != reference {ref_pos}"
+    else:   # reference not proven within its limit: ours (proven) must lie in [best plan, bound]
+        assert ref_pos - tol <= v <= max(bound, 0.0) + tol, f"{what}: {v} outside [{ref_pos}, {bound}]"
+
+
 @pytest.mark.parametrize("k", range(len(CASES)))
 def test_pricing_optimum_equals_position_model(k):
     inst, d, G, pi6, c = CASES[k]
-    ref, items, status, ref_bound = position_pricing(inst, d, G, pi6, c, time_limit=180)
-    assert status in ("OPTIMAL", "FEASIBLE"), f"reference model status {status}"
+    tol = 0.01 + 1e-3 * inst.n            # integer scaling of CP-SAT objectives
+    ref, _, status, bound = position_pricing(inst, d, G, pi6, c, time_limit=180)
+    ref1, _, status1, bound1 = position_pricing(inst, d, G, pi6, c, time_limit=180, dr1=True)
+    assert status in ("OPTIMAL", "FEASIBLE") and status1 in ("OPTIMAL", "FEASIBLE")
     plain, _ = _exact_prod(inst, d, G, pi6, c, dom=False, fid=False)
     full, st = _exact_prod(inst, d, G, pi6, c, dom=True, fid=True)
-    tol = 0.01 + 1e-3 * inst.n            # integer scaling of CP-SAT objectives
-    ref_pos = max(ref if ref is not None else 0.0, 0.0)
-    if status == "OPTIMAL":
-        assert plain == pytest.approx(ref_pos, abs=tol)
-        assert full == pytest.approx(ref_pos, abs=tol), "dominance rules / FID changed the optimum"
-    else:
-        # reference not proven within its limit: ours (proven) must lie inside its [best plan, bound]
-        hi = max(ref_bound, 0.0)
-        for v in (plain, full):
-            assert ref_pos - tol <= v <= hi + tol, f"{v} outside reference interval [{ref_pos}, {hi}]"
-        assert full == pytest.approx(plain, abs=tol), "dominance rules / FID changed the optimum"
-    assert st.value_bound >= max(plain, ref_pos) - tol, "reported bound below the true optimum"
+    _check(ref, status, bound, plain, tol, "no enhancements vs paper model")
+    _check(ref1, status1, bound1, full, tol, "all enhancements vs paper model + DR1")
+    assert full <= plain + tol, "a restriction cannot improve the optimum"
+    assert st.value_bound >= full - tol, "reported bound below the restricted optimum"
     STATS["dr2"] += st.dr2; STATS["dr3"] += st.dr3; STATS["dr4"] += st.dr4
     STATS["cond"] += st.conditioned; STATS["fid"] += int(st.fid_infeasible); STATS["cases"] += 1
-    STATS["proven_ref"] = STATS.get("proven_ref", 0) + int(status == "OPTIMAL")
+    STATS["dr1_changed"] = STATS.get("dr1_changed", 0) + int(full < plain - tol)
 
 
 def test_enhancements_actually_fired():
@@ -90,8 +100,9 @@ def test_knapsack_bound_matches_paper_steps_and_is_valid(k):
     ours = knapsack_bound(inst, d, cand, dbest)
     paper = paper_fid_bound(inst, d, cand, dbest)
     assert ours == pytest.approx(paper, abs=1e-9)
-    ref, _, _, _ = position_pricing(inst, d, G, pi6, c, time_limit=120)
-    assert ours + c >= (ref if ref is not None else -np.inf) - 0.02
+    ref, _, st_, bd = position_pricing(inst, d, G, pi6, c, time_limit=120, dr1=True)
+    best = ref if st_ == "OPTIMAL" else bd
+    assert ours + c >= (ref if ref is not None else -np.inf) - 0.02, "knapsack bound below a feasible schedule"
 
 
 def test_dr1_removes_exactly_1_to_SD_minus_1():

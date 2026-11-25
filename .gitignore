@@ -10,3 +10,4 @@ benchmarks/sync.out
 benchmarks/paper_budget.jsonl
 .sync-worktree/
 verification/reports/run*.txt
+verification/reports/ckpt/

@@ -77,26 +77,19 @@ def _solver_with_master(inst):
 
 def test_branching_rule_order_1_2_3():
     """(1) total #cases, then (2) #cases per surgeon (closest to .5), then (3) Ryan-Foster pair."""
-    inst = generate_instance(12, "A", seed=1, n_days=1, n_surgeons=3, rooms=3)
+    inst = generate_instance(16, "C", seed=1, n_days=1, n_surgeons=2, rooms=4, max_deadline=1)
     s = _solver_with_master(inst)
-    S0 = [i for i in inst.by_surgeon(0)][:3]
-    S1 = [i for i in inst.by_surgeon(1)][:2]
-    m = Master(inst)
-    c1 = Column(0, ((S0[0], 0),)); c2 = Column(0, ((S0[1], 0),)); c3 = Column(0, ((S1[0], 0),))
-    m.add_columns([c1, c2, c3])
+    A0, A1 = inst.by_surgeon(0)[:2]
+    B0, B1 = inst.by_surgeon(1)[:2]
+    t = lambda i: inst.surgeries[i].duration + inst.cleaning
+    one = lambda i: Column(0, ((i, 0),))
+    two = lambda i, j: Column(0, ((i, 0), (j, t(i))))
+    m = Master(inst); m.add_columns([one(A0), one(A1), one(B0)])
     assert s.choose_branch(m, np.array([0.5, 1.0, 1.0]))[0] == "count"
-    # total integral (0.5 + 0.5 = 1) but surgeon-0 count fractional? both are surgeon 0 -> integral;
-    m2 = Master(inst)
-    a = Column(0, ((S0[0], 0),)); b = Column(0, ((S1[0], 0),))
-    m2.add_columns([a, b])
-    assert s.choose_branch(m2, np.array([0.5, 0.5]))[0] == "surgeon"
-    m3 = Master(inst)
-    p = Column(0, ((S0[0], 0), (S1[0], 60)))
-    q = Column(0, ((S0[0], 0), (S1[1], 60)))
-    r = Column(0, ((S0[1], 0), (S1[0], 60)))
-    u = Column(0, ((S0[1], 0), (S1[1], 60)))
-    m3.add_columns([p, q, r, u])
-    br = s.choose_branch(m3, np.array([0.5, 0.5, 0.5, 0.5]))
+    m = Master(inst); m.add_columns([one(A0), one(B0)])          # total 1 (integral), surgeon 0: 0.5
+    assert s.choose_branch(m, np.array([0.5, 0.5]))[0] == "surgeon"
+    m = Master(inst); m.add_columns([two(A0, B0), two(A0, B1), two(A1, B0), two(A1, B1)])
+    br = s.choose_branch(m, np.array([0.5, 0.5, 0.5, 0.5]))      # counts integral, pairs fractional
     assert br[0] == "pair"
 
 
