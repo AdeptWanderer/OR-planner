@@ -1,0 +1,36 @@
+[    0.0s] new incumbent 6940 min (constructive heuristic)
+[    0.3s] node 0 it   1 phase 0 RMP    6940.0  bound  579220.0  +cols  43  cols 65  cuts 0
+[    0.4s] node 0 it   2 phase 0 RMP    6940.0  bound  321730.0  +cols  33  cols 98  cuts 0
+[    0.8s] node 0 it   3 phase 0 RMP    6940.0  bound   65625.1  +cols  50  cols 148  cuts 0
+[    1.3s] node 0 it   4 phase 0 RMP    6968.4  bound   20104.5  +cols  65  cols 213  cuts 22
+[    1.4s] node 0 it   5 phase 0 RMP    7160.0  bound    7160.0  +cols   0  cols 213  cuts 33
+[    1.4s] node 0 it   6 phase 1 RMP    7160.0  bound    7160.0  +cols   0  cols 213  cuts 33
+[    1.5s] new incumbent 7010 min (root RMP-IP)
+[    1.6s] node 1 it   1 phase 0 RMP    7160.0  bound    8450.0  +cols   1  cols 193  cuts 35
+[    1.7s] node 1 it   2 phase 0 RMP    7160.0  bound    7160.0  +cols   0  cols 193  cuts 40
+[    1.8s] node 1 it   3 phase 1 RMP    7160.0  bound    7160.0  +cols   0  cols 193  cuts 40
+[    1.8s] node 2 it   1 phase 0 RMP    7160.0  bound    7160.0  +cols   0  cols 213  cuts 45
+[    1.8s] node 2 it   2 phase 1 RMP    7160.0  bound    7160.0  +cols   0  cols 213  cuts 45
+[    2.2s] node 3 it   1 phase 0 RMP    7068.1  bound   16271.1  +cols  63  cols 242  cuts 50
+[    2.5s] node 3 it   2 phase 0 RMP    7069.4  bound   16249.4  +cols  14  cols 256  cuts 63
+[    2.7s] node 3 it   3 phase 0 RMP    7050.0  bound    7050.0  +cols   0  cols 256  cuts 68
+[    2.7s] node 3 it   4 phase 1 RMP    7050.0  bound    7050.0  +cols   0  cols 256  cuts 68
+[    3.0s] node 4 it   1 phase 0 RMP    7045.3  bound    8775.6  +cols  34  cols 303  cuts 71
+[    3.1s] node 4 it   2 phase 0 RMP    7050.0  bound    7050.0  +cols   0  cols 303  cuts 74
+[    3.1s] node 4 it   3 phase 1 RMP    7050.0  bound    7050.0  +cols   0  cols 303  cuts 74
+[    3.3s] node 5 it   1 phase 0 RMP    7010.0  bound   13880.0  +cols  30  cols 317  cuts 75
+[    3.5s] node 5 it   2 phase 0 RMP    7010.0  bound    7010.0  +cols   0  cols 317  cuts 78
+[    3.5s] node 5 it   3 phase 1 RMP    7010.0  bound    7010.0  +cols   0  cols 317  cuts 78
+[    3.6s] node 6 it   1 phase 0 RMP    7010.0  bound    7010.0  +cols   0  cols 339  cuts 83
+[    3.7s] node 6 it   2 phase 1 RMP    7010.0  bound    7010.0  +cols   0  cols 339  cuts 83
+[    3.8s] node 7 it   1 phase 0 RMP    -155.0  bound  396415.0  +cols   5  cols 283  cuts 84
+[    3.9s] node 7 it   2 phase 0 RMP    -155.0  bound    -155.0  +cols   0  cols 283  cuts 85
+[    3.9s] node 7 it   3 phase 1 RMP    -155.0  bound    -155.0  +cols   0  cols 283  cuts 85
+[    4.0s] node 8 it   1 phase 0 RMP    7010.0  bound    7010.0  +cols   0  cols 283  cuts 85
+[    4.0s] node 8 it   2 phase 1 RMP    7010.0  bound    7010.0  +cols   0  cols 283  cuts 85
+[    4.2s] node 9 it   1 phase 0 RMP    -155.0  bound    -155.0  +cols   0  cols 320  cuts 85
+[    4.2s] node 9 it   2 phase 1 RMP    -155.0  bound    -155.0  +cols   0  cols 320  cuts 85
+[    4.3s] node 10 it   1 phase 0 RMP    7010.0  bound    7010.0  +cols   0  cols 320  cuts 85
+[    4.3s] node 10 it   2 phase 1 RMP    7010.0  bound    7010.0  +cols   0  cols 320  cuts 85
+[    4.5s] done: LB 7010  UB 7010  gap 0.00%
+RESULT {"set": "A", "n": 40, "rooms": 6, "heuristic": 6940, "lb_no_polish": 7010.0, "gap_no_polish": 0.0, "lb": 7010.0, "ub": 7010, "gap": 0.0, "root_lp": 7160.0, "root_converged": true, "root_time": 1.4, "columns": 360, "cuts": 85, "nodes": 11, "time": 4.5, "wall_this_process": 4.5, "time_used": {"root": 1.4901061058044434, "branch": 2.8523247241973877}, "trajectory": [[0.0, 6940.0, 7160], [1.5, 7010.0, 7160], [1.5, 7010.0, 7160], [4.3, 7010.0, 7010.0], [4.5, 7010.0, 7010.0], [4.5, 7010.0, 7010.0], [4.5, 7010.0, 7010]], "valid": true}

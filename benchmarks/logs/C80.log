@@ -1,0 +1,10 @@
+[    0.0s] new incumbent 5515 min (constructive heuristic)
+[    1.1s] node 0 it   1 phase 0 RMP    5515.0  bound  592225.0  +cols  72  cols 87  cuts 0
+[    2.7s] node 0 it   2 phase 0 RMP    5515.0  bound  509155.0  +cols  79  cols 166  cuts 0
+[    5.0s] node 0 it   3 phase 0 RMP    5515.0  bound  346036.9  +cols 135  cols 301  cuts 0
+[    7.9s] node 0 it   4 phase 0 RMP    5515.0  bound  184243.3  +cols  68  cols 369  cuts 0
+[   10.4s] node 0 it   5 phase 0 RMP    5515.0  bound   43392.6  +cols 116  cols 485  cuts 0
+[   11.2s] node 0 it   6 phase 0 RMP    5515.0  bound    5515.0  +cols   0  cols 485  cuts 0
+[   11.2s] node 0 it   7 phase 1 RMP    5515.0  bound    5515.0  +cols   0  cols 485  cuts 0
+[   15.3s] done: LB 5515  UB 5515  gap 0.00%
+RESULT {"set": "C", "n": 80, "rooms": 3, "heuristic": 5515, "lb_no_polish": 5515.0, "gap_no_polish": 0.0, "lb": 5515.0, "ub": 5515, "gap": 0.0, "root_lp": 5515.0, "root_converged": true, "root_time": 11.2, "columns": 485, "cuts": 0, "nodes": 1, "time": 15.3, "wall_this_process": 15.3, "time_used": {"root": 13.360352039337158, "branch": 0.03406715393066406}, "trajectory": [[0.0, 5515.0, 5515], [13.4, 5515.0, 5515.0], [13.4, 5515.0, 5515.0], [15.2, 5515.0, 5515.0], [15.3, 5515.0, 5515.0], [15.3, 5515.0, 5515]], "valid": true}
