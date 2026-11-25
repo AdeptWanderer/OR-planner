@@ -4590,3 +4590,55 @@
 [ 7192.3s] node 3935 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
 [ 7193.9s] node 3936 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
 [ 7195.8s] node 3937 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7198.1s] node 3938 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7200.1s] node 3939 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7201.6s] node 3940 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7203.6s] node 3941 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7205.1s] node 3942 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7207.2s] node 3943 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7209.1s] node 3944 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7211.1s] node 3945 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7212.7s] node 3946 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7214.4s] node 3947 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7216.1s] node 3948 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7218.1s] node 3949 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7219.9s] node 3950 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7221.5s] node 3951 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7223.1s] node 3952 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7225.0s] node 3953 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7226.6s] node 3954 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7228.7s] node 3955 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7230.2s] node 3956 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7232.0s] node 3957 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7233.4s] node 3958 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7235.2s] node 3959 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7237.0s] node 3960 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7238.6s] node 3961 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7240.2s] node 3962 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7242.1s] node 3963 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7243.6s] node 3964 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7245.4s] node 3965 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7247.0s] node 3966 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7249.4s] node 3967 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7251.3s] node 3968 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7253.4s] node 3969 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7255.4s] node 3970 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7257.1s] node 3971 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7258.6s] node 3972 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7261.0s] node 3973 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7263.0s] node 3974 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7265.0s] node 3975 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7267.1s] node 3976 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7269.2s] node 3977 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7271.0s] node 3978 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7273.0s] node 3979 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7274.9s] node 3980 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7277.0s] node 3981 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7279.0s] node 3982 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7281.2s] node 3983 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7283.1s] node 3984 it   1 phase 0 RMP   11671.8  bound   11671.8  +cols   0  cols 2109  cuts 339
+[ 7284.8s] node 3985 it   1 phase 0 RMP   11673.7  bound   11673.7  +cols   0  cols 2111  cuts 339
+[ 7370.1s] new incumbent 11005 min (final IP over all columns)
+[ 7971.7s] new incumbent 11130 min (CP-SAT polishing)
+[ 7972.0s] done: LB 11130  UB 11670  gap 4.63%
+RESULT {"set": "A", "n": 120, "rooms": 6, "heuristic": 9450, "lb_no_polish": 11005.0, "gap_no_polish": 5.7, "lb": 11130.0, "ub": 11670, "gap": 4.63, "root_lp": 11792.2, "root_converged": true, "root_time": 67.9, "columns": 2380, "cuts": 339, "nodes": 3986, "time": 7971.9, "wall_this_process": 4873.7, "time_used": {"root": 83.89238548278809, "branch": 7200.895619153976}, "trajectory": [[83.9, 10710.0, 11792.22019986673], [83.9, 10710.0, 11792.220195967913], [389.8, 10710.0, 11682.5051301136], [689.9, 10710.0, 11673.717038644558], [990.5, 10710.0, 11673.717038644558], [1291.7, 10710.0, 11673.717038644558], [1592.8, 10710.0, 11673.717038644558], [1893.9, 10710.0, 11673.717038644558], [2194.7, 10710.0, 11673.717038644558], [2496.8, 10710.0, 11673.717038644558], [2797.0, 10710.0, 11673.717038644558], [3098.3, 10710.0, 11673.717038644558], [3398.7, 10710.0, 11673.717038644558], [3698.9, 10710.0, 11673.717038644558], [3999.6, 10710.0, 11673.717038644558], [4299.9, 10710.0, 11673.717038644558], [4600.2, 10710.0, 11673.717038644558], [4902.0, 10710.0, 11673.717038644558], [5202.6, 10710.0, 11673.717038644558], [5504.3, 10710.0, 11673.717038644558], [5804.5, 10710.0, 11673.717038644558], [6105.2, 10710.0, 11673.717038644558], [6405.8, 10710.0, 11673.717038644558], [6706.7, 10710.0, 11673.717038644558], [7007.1, 10710.0, 11673.717038644558], [7284.8, 10710.0, 11673.717038644558], [7370.1, 11005.0, 11673.717038644558], [7370.1, 11005.0, 11673.717038644558], [7971.7, 11130.0, 11673.717038644558], [7971.7, 11130.0, 11673.717038644558], [7971.9, 11130.0, 11670]], "valid": true}
