@@ -75,13 +75,17 @@ def test_pricing_optimum_equals_position_model(k):
     assert status in ("OPTIMAL", "FEASIBLE") and status1 in ("OPTIMAL", "FEASIBLE")
     plain, _ = _exact_prod(inst, d, G, pi6, c, dom=False, fid=False)
     full, st = _exact_prod(inst, d, G, pi6, c, dom=True, fid=True)
-    _check(ref, status, bound, plain, tol, "no enhancements vs paper model")
-    _check(ref1, status1, bound1, full, tol, "all enhancements vs paper model + DR1")
-    assert full <= plain + tol, "a restriction cannot improve the optimum"
-    assert st.value_bound >= full - tol, "reported bound below the restricted optimum"
     STATS["dr2"] += st.dr2; STATS["dr3"] += st.dr3; STATS["dr4"] += st.dr4
     STATS["cond"] += st.conditioned; STATS["fid"] += int(st.fid_infeasible); STATS["cases"] += 1
     STATS["dr1_changed"] = STATS.get("dr1_changed", 0) + int(full < plain - tol)
+    _check(ref, status, bound, plain, tol, "no enhancements vs paper model")
+    _check(ref1, status1, bound1, full, tol, "all enhancements vs paper model + DR1")
+    assert full <= plain + tol, "a restriction cannot improve the optimum"
+    # the reported bound must be >= the TRUE (possibly negative) restricted optimum
+    if status1 == "OPTIMAL" and ref1 is not None:
+        assert st.value_bound >= ref1 - tol, f"bound {st.value_bound} below true optimum {ref1}"
+    else:
+        assert st.value_bound >= full - tol
 
 
 def test_enhancements_actually_fired():
@@ -91,6 +95,7 @@ def test_enhancements_actually_fired():
     assert STATS["dr2"] > 0
     assert STATS["dr3"] + STATS["cond"] > 0
     assert STATS["fid"] > 0
+    print(f"\nenhancement counts over {STATS['cases']} cases: {STATS}")
 
 
 def test_dr4_fires_and_keeps_the_optimum():
