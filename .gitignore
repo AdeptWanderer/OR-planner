@@ -6,3 +6,6 @@ benchmarks/ckpt/
 benchmarks/logs/
 benchmarks/paper_budget.out
 benchmarks/supervise.out
+benchmarks/sync.out
+benchmarks/paper_budget.jsonl
+.sync-worktree/
