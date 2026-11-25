@@ -434,6 +434,7 @@ class Solver:
         return sol
 
     def _log_node(self, **kw):
+        kw.setdefault("pbound", getattr(self, "_cur_pbound", None))   # bound when popped (best-first audit)
         if len(self.node_log) < self.p.log_cap:
             self.node_log.append(kw)
 
@@ -450,6 +451,7 @@ class Solver:
             pbound = -negb
             if math.floor(pbound + 1e-6) <= self.best_obj + 1e-6:
                 continue   # pruned by bound
+            self._cur_pbound = pbound
             nid = next(self._node_ids) + 1
             self.n_nodes += 1
             prove = time.time() < prove_end
