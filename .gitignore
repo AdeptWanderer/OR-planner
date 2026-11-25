@@ -12,3 +12,4 @@ benchmarks/paper_budget.jsonl
 verification/reports/run*.txt
 verification/reports/ckpt/
 verification/reports/full_run.txt
+verification/reports/pricing_run3.txt
