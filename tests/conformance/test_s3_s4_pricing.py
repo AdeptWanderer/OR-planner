@@ -84,8 +84,8 @@ def test_pricing_optimum_equals_position_model(k):
     # the reported bound must be >= the TRUE (possibly negative) restricted optimum
     if status1 == "OPTIMAL" and ref1 is not None:
         assert st.value_bound >= ref1 - tol, f"bound {st.value_bound} below true optimum {ref1}"
-    else:
-        assert st.value_bound >= full - tol
+    else:   # reference only feasible: its best value is a lower bound on the true optimum
+        assert st.value_bound >= (ref1 if ref1 is not None else -np.inf) - tol
 
 
 def test_enhancements_actually_fired():

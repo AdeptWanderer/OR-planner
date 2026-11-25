@@ -1,5 +1,7 @@
 # Results vs. the paper (paper time budget)
 
+*Final; 13/13 instances; verification suite all green.*
+
 Reference: Hashemi Doulabi, Rousseau & Pesant (2016), *INFORMS J. Computing* 28(3), Table 6
 (branch-and-price-and-cut).
 
@@ -126,6 +128,15 @@ See [`VERIFICATION.md`](../VERIFICATION.md) for the element-by-element traceabil
    benchmark numbers above were produced after the fix.
 4. **Untested paths in the first test set.** The knapsack infeasibility path and DR4 had never fired. New
    cases now exercise both.
+
+**Verification suite (final run):**
+* 13/13 audited instances pass;
+* 99/99 pricing-conformance tests;
+* 27/27 model, cut, branching and algorithm tests;
+* 18/18 exactness tests against two independent exact solvers;
+* 10/10 unit tests.
+
+Details are in `VERIFICATION.md` §8.
 
 **Results provenance.** `verification/audit_results.py` regenerated all 13 instances and re-validated each
 stored schedule. It recomputed every reported plan, heuristic value and gap, checked bound consistency and

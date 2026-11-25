@@ -129,6 +129,25 @@ python verification/audit_results.py RESULTS.jsonl CKPT_DIR --crosscheck 120   #
   5. optionally re-solves with an independent CP-SAT model to check that no plan it finds exceeds our upper bound.
 * Paper figures quoted in the comparison are copied from Tables 3–8 of the paper.
 
-## 8. Verification results
+## 8. Verification results (final run)
 
-See `verification/reports/` for the raw test output; the summary is in the benchmark report.
+| Suite | Result | Raw output |
+|---|---|---|
+| Results audit, 13 paper-budget instances × 13 checks, with independent CP-SAT cross-check (120 s each) | **13/13 pass** | `reports/full_run_1.txt` |
+| Pricing vs the literal position model, 63 dual vectors (realistic, adversarial, converged, high room price), plus knapsack, DR1, DR4 and deadline tests | **99/99 pass** | `reports/pricing_run_final.txt` |
+| Problem definition, master (1)–(7), reduced cost, cuts, branching, Algorithms 1–2 | **27/27 pass** | `reports/full_run_1.txt` |
+| Exactness: 12 small instances vs monolithic CP-SAT, 6 tiny instances vs time-indexed MIP (HiGHS) | **18/18 pass** | `reports/full_run_1.txt` |
+| Unit tests | **10/10 pass** | `reports/full_run_1.txt` |
+
+How often the enhancements fired over the 63 pricing cases (so the equivalence checks are not vacuous):
+* DR2 removed 157 cases.
+* DR3 removed 31 cases and conditioned 20.
+* The knapsack check proved 13 subproblems useless.
+* DR1 changed the pricing optimum in 1 case (see the DR1 finding above).
+* DR4 is exercised by a dedicated hand-built case (`test_dr4_fires_and_keeps_the_optimum`).
+
+Test defects found and fixed while building the suite (none were production-code bugs):
+* columns that ran past the end of the day in the branching-order test;
+* the reference model not proving optimality within its time limit (now checked against an interval);
+* clamped values in the bound check;
+* the knapsack and DR4 paths not being exercised by the first case set.
