@@ -2968,3 +2968,4 @@
 [ 7254.8s] node 2403 it   1 phase 0 RMP    6985.0  bound    6985.0  +cols   0  cols 4183  cuts 61
 [ 7259.6s] node 2404 it   1 phase 0 RMP    6985.0  bound    6985.0  +cols   0  cols 4672  cuts 61
 [ 7263.8s] node 2405 it   1 phase 0 RMP    6985.0  bound    6985.0  +cols   0  cols 3987  cuts 61
+[10868.9s] new incumbent 5890 min (final IP over all columns)
