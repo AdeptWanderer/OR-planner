@@ -1,0 +1,20 @@
+[    0.0s] new incumbent 5700 min (constructive heuristic)
+[    3.8s] node 0 it   1 phase 0 RMP    5700.0  bound  872220.0  +cols  73  cols 88  cuts 0
+[    9.1s] node 0 it   2 phase 0 RMP    5700.0  bound  702912.5  +cols 114  cols 202  cuts 0
+[   12.2s] node 0 it   3 phase 0 RMP    5700.0  bound  471374.7  +cols  73  cols 275  cuts 0
+[   19.8s] node 0 it   4 phase 0 RMP    5700.0  bound  248115.0  +cols  72  cols 347  cuts 0
+[   24.8s] node 0 it   5 phase 0 RMP    5700.0  bound   35510.0  +cols 124  cols 471  cuts 0
+[   27.1s] node 0 it   6 phase 0 RMP    5773.3  bound   35510.0  +cols  77  cols 548  cuts 1
+[   28.0s] node 0 it   7 phase 0 RMP    6314.5  bound   13170.1  +cols  75  cols 623  cuts 2
+[   29.1s] node 0 it   8 phase 0 RMP    6528.5  bound   10577.3  +cols 140  cols 763  cuts 2
+[   32.4s] node 0 it   9 phase 0 RMP    6694.5  bound    9441.4  +cols 128  cols 891  cuts 4
+[   34.0s] node 0 it  10 phase 0 RMP    6820.5  bound    8829.1  +cols  81  cols 972  cuts 5
+[   35.8s] node 0 it  11 phase 0 RMP    6910.4  bound    8829.1  +cols  36  cols 1008  cuts 5
+[   37.9s] node 0 it  12 phase 0 RMP    6959.2  bound    8601.0  +cols 114  cols 1122  cuts 5
+[   38.8s] node 0 it  13 phase 0 RMP    6985.0  bound    6985.0  +cols   0  cols 1122  cuts 5
+[   38.8s] node 0 it  14 phase 1 RMP    6985.0  bound    6985.0  +cols   0  cols 1122  cuts 5
+[   61.8s] node 1 it   1 phase 0 RMP    6968.3  bound    9336.3  +cols  85  cols 1084  cuts 5
+[   63.1s] node 1 it   2 phase 0 RMP    6985.0  bound    6985.0  +cols   0  cols 1084  cuts 5
+[   63.3s] node 1 it   3 phase 1 RMP    6985.0  bound    6985.0  +cols   0  cols 1084  cuts 5
+[   63.7s] node 2 it   1 phase 0 RMP    6985.0  bound    6985.0  +cols   0  cols 1136  cuts 5
+[   63.7s] node 2 it   2 phase 1 RMP    6985.0  bound    6985.0  +cols   0  cols 1136  cuts 5
