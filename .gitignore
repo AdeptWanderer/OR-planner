@@ -9,3 +9,4 @@ benchmarks/supervise.out
 benchmarks/sync.out
 benchmarks/paper_budget.jsonl
 .sync-worktree/
+verification/reports/run*.txt

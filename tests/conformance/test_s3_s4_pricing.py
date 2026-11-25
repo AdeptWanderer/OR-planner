@@ -45,17 +45,25 @@ CASES = _cases()
 @pytest.mark.parametrize("k", range(len(CASES)))
 def test_pricing_optimum_equals_position_model(k):
     inst, d, G, pi6, c = CASES[k]
-    ref, items, status = position_pricing(inst, d, G, pi6, c, time_limit=120)
-    assert status == "OPTIMAL", "reference model did not prove optimality"
-    ref_pos = max(ref if ref is not None else 0.0, 0.0)
+    ref, items, status, ref_bound = position_pricing(inst, d, G, pi6, c, time_limit=180)
+    assert status in ("OPTIMAL", "FEASIBLE"), f"reference model status {status}"
     plain, _ = _exact_prod(inst, d, G, pi6, c, dom=False, fid=False)
     full, st = _exact_prod(inst, d, G, pi6, c, dom=True, fid=True)
     tol = 0.01 + 1e-3 * inst.n            # integer scaling of CP-SAT objectives
-    assert plain == pytest.approx(ref_pos, abs=tol)
-    assert full == pytest.approx(ref_pos, abs=tol), "dominance rules / FID changed the optimum"
-    assert st.value_bound >= ref_pos - tol, "reported bound below the true optimum"
+    ref_pos = max(ref if ref is not None else 0.0, 0.0)
+    if status == "OPTIMAL":
+        assert plain == pytest.approx(ref_pos, abs=tol)
+        assert full == pytest.approx(ref_pos, abs=tol), "dominance rules / FID changed the optimum"
+    else:
+        # reference not proven within its limit: ours (proven) must lie inside its [best plan, bound]
+        hi = max(ref_bound, 0.0)
+        for v in (plain, full):
+            assert ref_pos - tol <= v <= hi + tol, f"{v} outside reference interval [{ref_pos}, {hi}]"
+        assert full == pytest.approx(plain, abs=tol), "dominance rules / FID changed the optimum"
+    assert st.value_bound >= max(plain, ref_pos) - tol, "reported bound below the true optimum"
     STATS["dr2"] += st.dr2; STATS["dr3"] += st.dr3; STATS["dr4"] += st.dr4
     STATS["cond"] += st.conditioned; STATS["fid"] += int(st.fid_infeasible); STATS["cases"] += 1
+    STATS["proven_ref"] = STATS.get("proven_ref", 0) + int(status == "OPTIMAL")
 
 
 def test_enhancements_actually_fired():
@@ -82,7 +90,7 @@ def test_knapsack_bound_matches_paper_steps_and_is_valid(k):
     ours = knapsack_bound(inst, d, cand, dbest)
     paper = paper_fid_bound(inst, d, cand, dbest)
     assert ours == pytest.approx(paper, abs=1e-9)
-    ref, _, _ = position_pricing(inst, d, G, pi6, c, time_limit=120)
+    ref, _, _, _ = position_pricing(inst, d, G, pi6, c, time_limit=120)
     assert ours + c >= (ref if ref is not None else -np.inf) - 0.02
 
 

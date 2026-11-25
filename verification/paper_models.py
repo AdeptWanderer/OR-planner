@@ -34,7 +34,7 @@ def position_pricing(inst, d: int, G: np.ndarray, pi6: np.ndarray, const: float,
     pi6    : coloring duals pi^(6)_{d,l,t} >= 0, shape (L, T)
     const  : -pi^(4)_d  (we pass the constant term directly)
 
-    Returns (optimal value or None if no schedule exists, items list, status).
+    Returns (value of best schedule or None, items, status, proven upper bound).
     The surgery index in the paper is 1-based with 0 = empty; we map surgery i
     to value i+1.
     """
@@ -118,11 +118,12 @@ def position_pricing(inst, d: int, G: np.ndarray, pi6: np.ndarray, const: float,
     s.parameters.num_workers = 4
     st = s.solve(m)
     if st not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-        return None, [], s.status_name(st)
+        return None, [], s.status_name(st), None
     items = [(s.value(W[p]) - 1, s.value(V[p])) for p in range(n) if s.value(W[p]) != 0]
     # exact float value of the returned schedule
     val = const + sum(G[i] - pistar(i + 1, v) for i, v in items)
-    return val, items, s.status_name(st)
+    bound = s.best_objective_bound / SCALE + (2 * n + 1) * 0.5 / SCALE     # undo integer scaling, conservatively
+    return val, items, s.status_name(st), bound
 
 
 # --------------------------------------------------------------------------
