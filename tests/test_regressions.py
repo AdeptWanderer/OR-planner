@@ -190,3 +190,12 @@ def test_dayplan_schedules_every_mandatory_case_on_riverside():
     inst, _ = R.build()
     cols, info = dayplan_heuristic(inst, time_per_day=30, workers=4)
     assert validate_columns(inst, cols) == []
+
+
+def test_day_level_bound_reports_infeasibility_explicitly():
+    """Bug: on an infeasible instance (Ortho B leave before triage) the bound came back
+    as inf / 0 with 'not proven' instead of saying 'infeasible'."""
+    import riverside as R
+    inst, _ = R.build(extra_leave_week2=("Ortho B",))
+    b, assign, proved = day_level_bound(inst, integer=True)
+    assert b == -1.0 and proved

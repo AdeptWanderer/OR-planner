@@ -1,0 +1,473 @@
+<meta charset="utf-8">
+<title>Branch-and-Price for the OR</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of numbered lessons (the algorithm's real order), each built around one diagram; a sticky lesson index on wide screens. */
+:root {
+  --bg: #f6f7f9; --paper: #ffffff; --wash: #eef1f5; --line: #d9dee6;
+  --ink: #17202b; --ink-2: #56616e; --ink-3: #8a94a0;
+  --accent: #1d5f99; --accent-soft: #dfeaf6; --accent-fg: #ffffff;
+  --a2: #e0762f; --a2-soft: #fbe9dc; --a3: #129d7f; --a3-soft: #dcf3ed; --a4: #c99300; --a5: #8a5cd6;
+  --good: #1f7a3a; --good-soft: #e1f3e6; --crit: #b3261e; --crit-soft: #fbe3e1;
+  --clean: #c3ccd5;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --paper: #161d25; --wash: #1d2630; --line: #2c3743;
+    --ink: #e5ebf1; --ink-2: #a3afbb; --ink-3: #75818d;
+    --accent: #6eaee6; --accent-soft: #19324a; --accent-fg: #0c1622;
+    --a2: #f0915a; --a2-soft: #3a2618; --a3: #3cc3a3; --a3-soft: #143229; --a4: #e0b230; --a5: #ad8df0;
+    --good: #5fcf7e; --good-soft: #17301f; --crit: #f07a72; --crit-soft: #3a1a18; --clean: #4b5864;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --paper: #161d25; --wash: #1d2630; --line: #2c3743;
+  --ink: #e5ebf1; --ink-2: #a3afbb; --ink-3: #75818d;
+  --accent: #6eaee6; --accent-soft: #19324a; --accent-fg: #0c1622;
+  --a2: #f0915a; --a2-soft: #3a2618; --a3: #3cc3a3; --a3-soft: #143229; --a4: #e0b230; --a5: #ad8df0;
+  --good: #5fcf7e; --good-soft: #17301f; --crit: #f07a72; --crit-soft: #3a1a18; --clean: #4b5864;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.shell { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 36px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; font-size: 13px; display: grid; gap: 2px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; padding: 4px 8px; border-radius: 6px; display: grid; grid-template-columns: 26px 1fr; }
+nav.toc a:hover { background: var(--wash); color: var(--ink); }
+nav.toc a span { font-family: var(--font-mono); color: var(--ink-3); }
+@media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); } nav.toc { display: none; } }
+main { display: grid; gap: 22px; min-width: 0; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.015em; }
+h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; font-weight: 700; }
+h2 { font-size: 22px; font-weight: 600; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font-family: var(--font-mono); font-size: 14px; color: var(--accent); font-weight: 500; }
+h3 { font-size: 15px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { font-size: 17px; color: var(--ink-2); max-width: 62ch; }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-3); font-weight: 600; }
+section.lesson { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: grid; gap: 14px; min-width: 0; scroll-margin-top: 16px; }
+.take { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 9px 12px; border-radius: 0 8px 8px 0; font-size: 14px; max-width: 70ch; }
+.take b { color: var(--accent); }
+.warn { border-left: 3px solid var(--a2); background: var(--a2-soft); padding: 9px 12px; border-radius: 0 8px 8px 0; font-size: 14px; max-width: 70ch; }
+.fig { overflow-x: auto; min-width: 0; }
+.fig svg { display: block; width: 100%; height: auto; }
+.fig svg.wide { min-width: 620px; }
+.fig.narrow svg { max-width: 340px; }
+svg .t-white { paint-order: stroke; stroke: rgba(0, 0, 0, .38); stroke-width: 3px; stroke-linejoin: round; }
+.cap { font-size: 12.5px; color: var(--ink-3); }
+.eqs { background: var(--wash); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 22px; align-items: baseline; overflow-x: auto; }
+.eqs .e { font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif; font-size: 17px; white-space: nowrap; color: var(--ink); }
+.eqs .e i { font-style: italic; }
+.eqs .m { font-size: 13px; color: var(--ink-2); }
+.eqs .no { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); margin-right: 6px; font-style: normal; }
+@media (max-width: 640px) { .eqs { grid-template-columns: minmax(0, 1fr); gap: 2px; } .eqs .m { margin-bottom: 8px; } .eqs .e { white-space: normal; } }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.card { background: var(--wash); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.card h3 { display: flex; gap: 8px; align-items: center; }
+.tag { font-family: var(--font-mono); font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--paper); color: var(--ink-2); border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--ink-2); font-weight: 600; background: var(--wash); }
+td.r, th.r { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; min-width: 0; }
+.chip { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.f { background: var(--good-soft); color: var(--good); } .chip.a { background: var(--accent-soft); color: var(--accent); } .chip.e { background: var(--a2-soft); color: var(--a2); } .chip.x { background: var(--crit-soft); color: var(--crit); }
+svg text { fill: var(--ink-2); font-family: var(--font-body); font-size: 12px; }
+svg .t-ink { fill: var(--ink); } svg .t-mono { font-family: var(--font-mono); } svg .t-white { fill: #fff; font-weight: 600; }
+details.q { background: var(--wash); border-radius: 10px; padding: 10px 14px; }
+details.q summary { cursor: pointer; font-weight: 600; }
+details.q p { margin-top: 8px; color: var(--ink-2); }
+details.q summary:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stepper { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.stepper button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 8px; padding: 5px 12px; cursor: pointer; min-height: 32px; }
+.stepper button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); padding: 6px 9px; border-radius: 6px; font-size: 12px; z-index: 20; max-width: 260px; }
+.hero { display: grid; gap: 12px; padding-block: 6px 4px; }
+.legend-row { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink-2); }
+.legend-row span { display: inline-flex; align-items: center; gap: 6px; } .legend-row i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+@media (prefers-reduced-motion: no-preference) { .pulse { animation: pulse 2.4s ease-in-out infinite; } @keyframes pulse { 50% { opacity: .45; } } }
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="Lessons">
+  <a href="#l0"><span>00</span>Notation &amp; terms</a><a href="#l1"><span>01</span>The problem</a><a href="#l2"><span>02</span>Why not one big model</a><a href="#l3"><span>03</span>Columns &amp; master</a>
+  <a href="#l4"><span>04</span>Prices &amp; reduced cost</a><a href="#l5"><span>05</span>Pricing with CP</a><a href="#l6"><span>06</span>Making pricing fast</a>
+  <a href="#l7"><span>07</span>The CG loop</a><a href="#l8"><span>08</span>Cutting planes</a><a href="#l9"><span>09</span>Branching</a>
+  <a href="#l10"><span>10</span>Bounds &amp; the gap</a><a href="#l11"><span>11</span>What we built</a><a href="#l12"><span>12</span>Check yourself</a>
+</nav>
+<main>
+<header class="hero">
+  <div class="eyebrow">Hashemi Doulabi, Rousseau &amp; Pesant · INFORMS J. Computing 28(3), 2016 · plus our reproduction</div>
+  <h1>Branch-and-price for the operating room</h1>
+  <p class="lede">A hospital must decide, for one week, which surgeries to do, on which day, in which operating room (OR) and at what time. The paper solves this with two cooperating models: a <b>master problem</b> that chooses whole room-day schedules, and a <b>constraint-programming model</b> that invents new room-day schedules worth adding. This page explains every piece, in order. Every symbol is defined in lesson 00.</p>
+  <div class="card" style="max-width:78ch"><h3>The idea in one minute</h3>
+    <p>Think of a hospital manager and a team of room planners. The <b>manager</b> (master problem) holds a pile of proposed day-plans for single rooms and picks the best combination that doesn't double-book any patient, surgeon or room. While doing so, the manager learns what each scarce thing is worth right now: this patient is valuable to fit in, that surgeon's Tuesday morning is overbooked. These are the <b>prices</b>. The <b>planners</b> (pricing problem) then try to write a new single-room day-plan that is worth more than the price of everything it uses. If one exists, it goes on the pile and the manager re-decides. When no planner can beat the prices, the manager's choice is as good as any combination of <i>all possible</i> day-plans. If that choice still has "half a plan" in it, the problem is split in two (<b>branching</b>) and the process repeats on each half.</p></div>
+  <div class="fig" id="big-loop"></div>
+  <p class="cap">The whole method. Read it left to right: start with simple schedules, let the master choose among them and put prices on resources, ask the scheduler for better schedules at those prices, repeat until none exists, then branch (if needed) and pick the final plan.</p>
+</header>
+
+<section class="lesson" id="l0">
+  <h2><span class="n">00</span>Notation and terms</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Symbol</th><th>Meaning</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><i>i</i></td><td>a surgery (a "case")</td><td>a hip replacement for one patient</td></tr>
+      <tr><td><i>t<sub>i</sub></i></td><td>duration of case <i>i</i>, in 5-minute slots</td><td>120 min = 24 slots</td></tr>
+      <tr><td><i>s<sub>i</sub></i></td><td>the surgeon who must perform case <i>i</i> (fixed in advance)</td><td>Dr. Ortho A</td></tr>
+      <tr><td><i>dd<sub>i</sub></i></td><td>deadline day of case <i>i</i>; if it falls inside the week the case is <b>mandatory</b>, otherwise <b>optional</b> (it can wait)</td><td>"by Wednesday"</td></tr>
+      <tr><td><i>f<sub>i</sub></i></td><td>infection status of case <i>i</i> (none, or a type such as MRSA)</td><td>MRSA</td></tr>
+      <tr><td><i>d</i>, <i>D</i></td><td>a day; the set of days in the week</td><td>Mon…Fri</td></tr>
+      <tr><td><i>K<sub>d</sub></i></td><td>the operating rooms open on day <i>d</i>; |<i>K<sub>d</sub></i>| is how many</td><td>6 rooms</td></tr>
+      <tr><td><i>T</i></td><td>slots in a room day: 8 hours = 96 slots of 5 minutes</td><td>08:00–16:00</td></tr>
+      <tr><td><i>l</i></td><td>a surgeon</td><td></td></tr>
+      <tr><td><i>A<sub>ld</sub></i></td><td>the most minutes surgeon <i>l</i> may operate on day <i>d</i></td><td>320 min</td></tr>
+      <tr><td>OCT</td><td>obligatory cleaning time when a room switches infection status</td><td>30 min</td></tr>
+      <tr><td><i>j</i>, <i>B<sub>j</sub></i></td><td>a column (one room-day schedule, lesson 03) and its total surgery minutes</td><td>3 cases, 300 min</td></tr>
+      <tr><td><i>x<sub>j</sub></i></td><td>decision: 1 if schedule <i>j</i> is used, 0 if not</td><td></td></tr>
+      <tr><td>&pi;</td><td>dual prices from the master problem (lesson 04)</td><td></td></tr>
+      <tr><td>&sigma;<sub><i>j</i></sub></td><td>reduced cost: how much schedule <i>j</i> would improve the master (lesson 04)</td><td>+30</td></tr>
+    </tbody></table></div>
+  <div class="grid2">
+    <div class="card"><h3>LP and IP</h3><p>A <b>linear program (LP)</b> maximises a linear objective under linear constraints with continuous variables; it is fast to solve exactly. An <b>integer program (IP)</b> is the same with whole-number (here 0/1) variables; it is hard. The <b>LP relaxation</b> of an IP drops the whole-number requirement (allows <i>x</i> = 0.5).</p></div>
+    <div class="card"><h3>Bounds and gap</h3><p>A <b>feasible plan</b> obeys every rule; its value is a <b>lower bound</b> on the best possible. An <b>upper bound</b> is a proven ceiling no plan can exceed (an LP relaxation gives one). The <b>gap</b> = (upper − lower) / upper is how far the plan can be from optimal, at most. 0% means proven optimal.</p></div>
+    <div class="card"><h3>Refresher: duality and shadow prices</h3><p>Every LP has a <b>dual</b> LP with one variable per constraint. At the optimum, the dual value of a constraint (its <b>shadow price</b>) is the gain in objective per extra unit of that constraint's right-hand side. A constraint that isn't tight has price 0.</p></div>
+    <div class="card"><h3>Refresher: reduced cost</h3><p>In the simplex method, a variable's <b>reduced cost</b> is its objective coefficient minus the shadow prices of the constraints it appears in. In a maximisation, a positive reduced cost means bringing that variable into the solution increases the objective; when none is positive, the LP is optimal.</p></div>
+    <div class="card"><h3>Refresher: column generation</h3><p>For LPs with too many variables to write down: solve with a few, use the shadow prices to search for a missing variable with positive reduced cost (the <b>pricing problem</b>), add it, repeat. Classic example: cutting stock (Gilmore &amp; Gomory, 1961).</p></div>
+    <div class="card"><h3>Refresher: branch-and-bound</h3><p>Solve the LP relaxation; if the answer isn't integer, split on a fractional decision into two subproblems and solve each. Discard a subproblem when its LP bound cannot beat the best integer plan found. <b>Branch-and-price</b> = branch-and-bound where every subproblem's LP is solved by column generation; <b>-and-cut</b> = cutting planes are also added.</p></div>
+    <div class="card"><h3>Heuristic</h3><p>A quick rule of thumb that produces a feasible plan, with no guarantee of quality.</p></div>
+    <div class="card"><h3>Constraint programming (CP)</h3><p>A solver that searches over variables with finite domains (for example "start time ∈ {0…96}"), using each constraint to remove impossible values early (propagation). Strong on sequencing and timing.</p></div>
+  </div>
+</section>
+
+<section class="lesson" id="l1">
+  <h2><span class="n">01</span>The problem</h2>
+  <p>Inputs: a waiting list of cases (duration, surgeon, deadline, infection status), the rooms open each day, and each surgeon's available minutes per day. Output: for every scheduled case, a day, a room and a start time.</p>
+  <div class="fig" id="f-problem"></div>
+  <p class="cap">One day, two rooms. Colours are surgeons' specialties; hatched = infectious case; grey = cleaning. The orthopaedic surgeon finishes in OR 1 at 10:30 and starts in OR 2 at 10:50: allowed, because they never overlap.</p>
+  <div class="grid2">
+    <div class="card"><h3>Objective</h3><p>Maximise total minutes of surgery performed in the week (more patients treated, rooms used well).</p></div>
+    <div class="card"><h3>Rules</h3><p>(a) every mandatory case is done by its deadline; (b) a surgeon works at most <i>A<sub>ld</sub></i> minutes on day <i>d</i> and is never in two rooms at once; (c) a room holds one case at a time within its 8-hour day; (d) OCT cleaning separates cases of different infection status.</p></div>
+  </div>
+  <p class="take"><b>Why it is hard.</b> Rooms are shared by surgeons (open scheduling), so choosing a start time in one room constrains the same surgeon's other rooms. Day, room and time decisions are all linked.</p>
+</section>
+
+<section class="lesson" id="l2">
+  <h2><span class="n">02</span>Why not one big model</h2>
+  <p>The direct ("compact") model has a 0/1 variable <i>x<sub>ikdt</sub></i> = 1 if case <i>i</i> starts at slot <i>t</i> in room <i>k</i> on day <i>d</i>. For 120 cases, 6 rooms, 5 days and 96 slots that is 345,600 variables. Its LP relaxation is weak: it can schedule "half of a case" in many places, so its upper bound is far above reality and the IP solver cannot close the gap.</p>
+  <div class="fig" id="f-gaps"></div>
+  <p class="cap">Average optimality gap (lower is better) reported by the paper for each approach on the same instances. The decomposition this page explains is the last bar.</p>
+  <p class="take"><b>The idea.</b> Split the work: a master problem chooses which <i>complete room-day schedules</i> to use; a separate model builds good room-day schedules. Each part is easy for its solver.</p>
+</section>
+
+<section class="lesson" id="l3">
+  <h2><span class="n">03</span>Columns and the master problem</h2>
+  <p>A <b>column</b> <i>j</i> is one complete, valid schedule for one room on one day: which cases, in what order, at what start times, with cleanings. It is called a column because it becomes one column of the master problem's constraint matrix (below). <i>B<sub>j</sub></i> = its total surgery minutes.</p>
+  <div class="fig" id="f-master"></div>
+  <p class="cap">Each column (grey stripe) marks the rows it uses: blue = cases it contains, orange = the day it belongs to, green/purple = the surgeon minutes and time slots it occupies. "Mon alt" is an alternative Monday schedule containing cases A and C.</p>
+  <p>The <b>master problem</b> chooses which columns to use (<i>x<sub>j</sub></i> = 1) so that the chosen room-days fit together:</p>
+  <div class="eqs">
+    <span class="e"><span class="no">(1)</span>max &Sigma;<sub><i>j</i></sub> <i>B<sub>j</sub></i> <i>x<sub>j</sub></i></span><span class="m">maximise the minutes of all chosen schedules</span>
+    <span class="e"><span class="no">(2)</span>&Sigma;<sub><i>j</i> contains <i>i</i></sub> <i>x<sub>j</sub></i> = 1</span><span class="m">each mandatory case appears in exactly one chosen schedule</span>
+    <span class="e"><span class="no">(3)</span>&Sigma;<sub><i>j</i> contains <i>i</i></sub> <i>x<sub>j</sub></i> &le; 1</span><span class="m">each optional case at most once</span>
+    <span class="e"><span class="no">(4)</span>&Sigma;<sub><i>j</i> on day <i>d</i></sub> <i>x<sub>j</sub></i> &le; |<i>K<sub>d</sub></i>|</span><span class="m">no more schedules on day <i>d</i> than open rooms</span>
+    <span class="e"><span class="no">(5)</span>&Sigma; minutes of surgeon <i>l</i> on day <i>d</i> &le; <i>A<sub>ld</sub></i></span><span class="m">surgeon's daily limit, summed over all rooms</span>
+    <span class="e"><span class="no">(6)</span>&Sigma; schedules where <i>l</i> operates in slot <i>t</i> &le; 1</span><span class="m">surgeon never in two rooms in the same 5-minute slot</span>
+    <span class="e"><span class="no">(7)</span><i>x<sub>j</sub></i> &isin; {0, 1}</span><span class="m">a schedule is used or not</span>
+  </div>
+  <p class="take"><b>The catch.</b> There are astronomically many possible room-day schedules. The method never lists them. It keeps a small working set (the <b>restricted master problem</b>, RMP), starting from a greedy heuristic's schedules, and adds only schedules that can improve it. That is <b>column generation</b>.</p>
+</section>
+
+<section class="lesson" id="l4">
+  <h2><span class="n">04</span>Dual prices and reduced cost</h2>
+  <p>Solve the LP relaxation of the RMP (allow 0 ≤ <i>x<sub>j</sub></i> ≤ 1). Besides the optimal <i>x</i>, an LP solver returns a <b>dual price</b> &pi; for every constraint: how much the objective would rise if that constraint were loosened by one unit. Think of it as the market price of each resource:</p>
+  <div class="grid2">
+    <div class="card"><p><b>&pi;<sub><i>i</i></sub></b> (row 2/3): the value of case <i>i</i> being covered by the current schedules. A new schedule that includes <i>i</i> "pays" &pi;<sub><i>i</i></sub> for it.</p></div>
+    <div class="card"><p><b>&pi;<sub><i>l</i>,<i>d</i></sub></b> (row 5): price per minute of surgeon <i>l</i>'s time on day <i>d</i>.</p></div>
+    <div class="card"><p><b>&pi;<sub><i>d</i>,<i>l</i>,<i>t</i></sub></b> (row 6): price of surgeon <i>l</i> being busy in slot <i>t</i>; high where the surgeon is already needed in another room.</p></div>
+    <div class="card"><p><b>&pi;<sub><i>d</i></sub></b> (row 4): price of using one more room on day <i>d</i>.</p></div>
+  </div>
+  <p>The <b>reduced cost</b> &sigma;<sub><i>j</i></sub> of a schedule not yet in the RMP is its minutes minus the price of everything it uses. If &sigma;<sub><i>j</i></sub> &gt; 0, adding it lets the LP improve.</p>
+  <div class="fig" id="f-receipt"></div>
+  <p class="cap">Worked example: a candidate Monday schedule of 300 minutes uses cases whose prices total 150, 40 worth of surgeon minutes, 35 of busy-slot prices and 45 for the room. &sigma; = 300 − 150 − 40 − 35 − 45 = +30 &gt; 0, so it is added.</p>
+  <div class="eqs">
+    <span class="e">&sigma;<sub><i>j</i></sub> = <i>B<sub>j</sub></i> &minus; &Sigma;<sub><i>i</i>&isin;<i>j</i></sub> &pi;<sub><i>i</i></sub> &minus; &Sigma;<sub><i>i</i>&isin;<i>j</i></sub> <i>t<sub>i</sub></i> &pi;<sub><i>s<sub>i</sub></i>,<i>d</i></sub> &minus; &Sigma;<sub>busy slots</sub> &pi;<sub><i>d</i>,<i>l</i>,<i>t</i></sub> &minus; &pi;<sub><i>d</i></sub></span><span class="m">the same calculation in symbols</span>
+  </div>
+  <p class="take"><b>Why this matters.</b> Every price term belongs to one day, so the search for a schedule with &sigma; &gt; 0 splits into one independent problem per day. If no day has one, the LP is already optimal over <i>all</i> possible schedules, even those never listed.</p>
+</section>
+
+<section class="lesson" id="l5">
+  <h2><span class="n">05</span>Pricing: finding the best new schedule with CP</h2>
+  <p>The <b>pricing problem</b> (also <b>subproblem</b>) for day <i>d</i>: among all valid single-room schedules for that day, find the one with the largest &sigma;. It is a small scheduling problem, so the paper solves it with constraint programming.</p>
+  <div class="fig" id="f-cp"></div>
+  <p class="cap">The paper's model fills numbered positions in a room's day. W<sub>p</sub> is the case in position <i>p</i> (0 = empty), V<sub>p</sub> its start slot.</p>
+  <div class="eqs">
+    <span class="e">W<sub><i>p</i></sub> &isin; {cases with <i>dd<sub>i</sub></i> &ge; <i>d</i>} &cup; {0}</span><span class="m">(8) only cases still allowed on day <i>d</i></span>
+    <span class="e">W<sub><i>p</i></sub> = 0 &rArr; W<sub><i>p</i>+1</sub> = 0</span><span class="m">(10) empty positions only at the end (avoids duplicate solutions)</span>
+    <span class="e">V<sub><i>p</i>+1</sub> &ge; V<sub><i>p</i></sub> + <i>t</i><sub>W<sub><i>p</i></sub></sub> + CL</span><span class="m">(11) next case starts after this one ends, plus cleaning CL = OCT if infection status changes</span>
+    <span class="e">each case at most once</span><span class="m">(12–13)</span>
+    <span class="e">surgeon minutes in this room &le; <i>A<sub>ld</sub></i></span><span class="m">(14)</span>
+    <span class="e">maximise &sigma; and require &sigma; &ge; 0</span><span class="m">(17–19) the price of a case depends on its start time through the slot prices</span>
+  </div>
+  <p>Our implementation uses OR-Tools CP-SAT with one optional time interval per case instead of positions. A test showed it finds the same optimum as the paper's model on 63 sets of prices.</p>
+</section>
+
+<section class="lesson" id="l6">
+  <h2><span class="n">06</span>Making pricing fast</h2>
+  <p>Two quantities per case <i>i</i> on day <i>d</i> drive the rules. <b>&Delta;<sup>best</sup><sub><i>id</i></sub></b> = the most case <i>i</i> could add to &sigma; (its minutes minus its prices, at its cheapest start time). <b>&Delta;<sup>worst</sup><sub><i>id</i></sub></b> = the least (at its most expensive start). <b>SD<sub><i>d</i></sub></b> = the shortest duration among cases allowed on day <i>d</i>.</p>
+  <div class="grid2">
+    <div class="card"><h3>DR1 <span class="tag">start window</span></h3><p>The first case starts at 0 or at ≥ SD<sub><i>d</i></sub>. Starting it at 1…SD−1 helps nobody: no other case of that surgeon fits before it, so it could start at 0.</p><div class="fig narrow" id="f-dr1"></div></div>
+    <div class="card"><h3>DR2 <span class="tag">useless cases</span></h3><p>If &Delta;<sup>best</sup> &lt; 0, case <i>i</i> lowers &sigma; wherever it goes: remove it from this day's search.</p></div>
+    <div class="card"><h3>DR3 <span class="tag">dominance</span></h3><p>If case <i>i′</i> is no longer than <i>i</i> yet even at its worst beats <i>i</i> at its best (&Delta;<sup>worst</sup><sub><i>i′</i></sub> &gt; &Delta;<sup>best</sup><sub><i>i</i></sub>), swapping <i>i</i> for <i>i′</i> always helps. Remove <i>i</i>, or allow <i>i</i> only if <i>i′</i> is also scheduled.</p></div>
+    <div class="card"><h3>DR4 <span class="tag">impossible chains</span></h3><p>If DR3 says "<i>i</i> needs <i>i′</i>, which needs <i>i″</i>…" and together they exceed the room day or the surgeon's minutes, remove <i>i</i>.</p></div>
+  </div>
+  <h3>Fast infeasibility detection (§4.2)</h3>
+  <div class="fig" id="f-knap"></div>
+  <p>Treat each case as an item worth &Delta;<sup>best</sup> and weighing <i>t<sub>i</sub></i>, packed into the room day and each surgeon's minutes. Greedily pack by value per minute, allowing a fraction of the last item. The result can only overestimate the best &sigma;. If even that overestimate is ≤ 0, no improving schedule exists for the day and the CP search is skipped entirely.</p>
+  <p class="warn"><b>Our finding.</b> DR1's proof is about the best weekly plan, not about every pricing problem: at some prices the best new schedule starts at slot 2, which DR1 forbids. DR1 therefore restricts the schedules considered without losing the optimal weekly plan. DR2–DR4 and the knapsack check never changed the pricing optimum in our tests.</p>
+</section>
+
+<section class="lesson" id="l7">
+  <h2><span class="n">07</span>The column-generation loop (Algorithm 1)</h2>
+  <ol style="margin:0;padding-left:20px;display:grid;gap:4px;max-width:70ch">
+    <li>Solve the RMP's LP relaxation; read the dual prices.</li>
+    <li>Add any violated cover cuts (lesson 08) and re-solve.</li>
+    <li>For each day, solve the pricing problem; add every schedule found with &sigma; &gt; 0.</li>
+    <li>Repeat until no day returns a schedule. Then the LP value is the true LP optimum over all schedules.</li>
+  </ol>
+  <div class="legend-row"><span><i style="background:var(--accent)"></i>RMP LP value (best fractional plan from the schedules so far)</span><span><i style="background:var(--a2)"></i>upper bound (dashed)</span><span><i style="background:var(--a3)"></i>final integer plan</span></div>
+  <div class="fig" id="f-cg"></div>
+  <div class="stepper" id="cg-steps" aria-label="Step through the iterations"></div>
+  <p id="cg-note" class="cap"></p>
+  <div class="grid2">
+    <div class="card"><h3>Phase 0</h3><p>Each CP search gets a short time limit (paper: 10 s). It may miss schedules, but finds good ones fast.</p></div>
+    <div class="card"><h3>Phase 1</h3><p>When phase 0 finds nothing, search again without a limit to <i>prove</i> no &sigma; &gt; 0 exists. Only then is the LP value a valid upper bound.</p></div>
+  </div>
+  <p class="cap">Real run from our benchmark (set B, 50 cases, 30-min cleaning). The bound starts above 500,000 min (open circles are off the chart).</p>
+</section>
+
+<section class="lesson" id="l8">
+  <h2><span class="n">08</span>Cutting planes: lifted cover inequalities</h2>
+  <p>A <b>cutting plane</b> (cut) is an extra inequality that every integer plan satisfies but the current fractional LP solution violates; adding it tightens the LP bound. Here the cuts come from surgeon limits. Let <i>z<sub>id</sub></i> = the total weight <i>x<sub>j</sub></i> of day-<i>d</i> schedules containing case <i>i</i> (1 if the case is done that day).</p>
+  <div class="fig" id="f-cover"></div>
+  <p class="cap">A <b>cover</b>: cases A, B and C of one surgeon together need 370 min, above their 330-min limit. In an integer plan at most two of them happen that day, but the LP can take 0.9 of each (sum 2.7). The cut forbids that.</p>
+  <div class="eqs">
+    <span class="e">&Sigma;<sub><i>i</i> &isin; <i>C</i></sub> <i>z<sub>id</sub></i> &le; |<i>C</i>| &minus; 1</span><span class="m">cover cut: from a set <i>C</i> that overfills the limit, at most |<i>C</i>| − 1 cases</span>
+    <span class="e">&Sigma;<sub><i>i</i> &isin; <i>C</i></sub> <i>z<sub>id</sub></i> + &Sigma;<sub><i>i</i> &notin; <i>C</i></sub> &alpha;<sub><i>i</i></sub> <i>z<sub>id</sub></i> &le; |<i>C</i>| &minus; 1</span><span class="m"><b>lifted</b>: the surgeon's other cases join with weights &alpha;<sub><i>i</i></sub> (a long case counts as several short ones), making the cut stronger</span>
+  </div>
+  <p>Cut prices enter the reduced cost just like the other duals, so pricing stays consistent.</p>
+  <p class="warn"><b>Our finding.</b> The paper's formula for &alpha; (eq. 39) builds it from the cover's <i>smallest</i> durations and can exclude a valid plan (cover {3, 3, 8} slots, limit 13, extra case of 3: three 3-slot cases fit, yet the cut forbids it). We use the standard version built from the <i>largest</i> durations.</p>
+</section>
+
+<section class="lesson" id="l9">
+  <h2><span class="n">09</span>Branching (Algorithm 2)</h2>
+  <p>When column generation ends, the LP solution may still be fractional (for example <i>x</i> = 0.5 on two schedules). <b>Branch-and-bound</b> then splits the problem into two <b>child</b> problems that each exclude the fractional solution, solves each child's LP (with column generation again, hence <b>branch-and-price</b>), and repeats. Each subproblem is a <b>node</b> of a tree.</p>
+  <div class="fig" id="f-tree"></div>
+  <div class="grid2">
+    <div class="card"><h3>Rule 1 · total cases</h3><p>If the LP schedules 41.6 cases in total, one child requires ≥ 42 and the other ≤ 41.</p></div>
+    <div class="card"><h3>Rule 2 · cases per surgeon</h3><p>Same idea for one surgeon, choosing the one whose count is closest to x.5.</p></div>
+    <div class="card"><h3>Rule 3 · Ryan–Foster pair</h3><p>For two cases <i>i</i>, <i>i′</i> that share a room in some schedules but not others: one child forces "same room", the other "different rooms". Pricing obeys the rule.</p></div>
+  </div>
+  <p><b>Best-first</b>: the open node with the highest upper bound is solved next. A node is <b>pruned</b> (discarded) when its upper bound cannot beat the best plan found. For the first 15 minutes every node is solved to proven optimality; after that, nodes are processed fast to generate many schedules. Finally an IP over all generated schedules chooses the plan.</p>
+</section>
+
+<section class="lesson" id="l10">
+  <h2><span class="n">10</span>Bounds and the optimality gap</h2>
+  <div class="fig" id="f-gap"></div>
+  <p class="cap">The same real run. Greedy = the starting heuristic. Plan = best valid schedule found. Bound = proven ceiling after branching. Root LP = the LP optimum before branching.</p>
+  <div class="eqs">
+    <span class="e">gap = (bound &minus; plan) / bound</span><span class="m">2.06% here: the plan is at most 2.06% below the best possible</span>
+    <span class="e"><i>z</i>* &le; <i>z</i><sub>RMP</sub> + &Sigma;<sub><i>d</i></sub> |<i>K<sub>d</sub></i>| &middot; max(0, &sigma;&#770;<sub><i>d</i></sub>)</span><span class="m">our Lagrangian bound: the current LP value plus, for each day, the number of rooms times the best possible &sigma;<sub>d</sub> (&sigma;&#770;<sub><i>d</i></sub>). Valid even before column generation finishes.</span>
+  </div>
+</section>
+
+<section class="lesson" id="l11">
+  <h2><span class="n">11</span>What we built and learned</h2>
+  <p>Status terms: <b>faithful</b> = implemented as the paper states; <b>adapted</b> = same mathematics, different tool, tested equivalent; <b>extension</b> = our addition, reported separately.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Element</th><th>Status</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>Problem, master (1)–(7), reduced cost, branching rules, Algorithms 1–2, time budget</td><td><span class="chip f">faithful</span></td><td>as written</td></tr>
+      <tr><td>CP pricing model</td><td><span class="chip a">adapted</span></td><td>CP-SAT intervals; same optimum as the position model</td></tr>
+      <tr><td>Dominance rules, knapsack check</td><td><span class="chip a">adapted</span></td><td>applied once per search; DR1 is a restriction</td></tr>
+      <tr><td>Cover lifting</td><td><span class="chip a">corrected</span></td><td>eq. (39) as printed is invalid</td></tr>
+      <tr><td><b>Polishing</b>: re-solve the whole week as one CP-SAT model, starting from the best plan</td><td><span class="chip e">extension</span></td><td>improves the plan, never the bound</td></tr>
+      <tr><td><b>Day-level bound</b>: an IP that only assigns cases to days within surgeon and room minutes</td><td><span class="chip e">extension</span></td><td>valid, fast ceiling</td></tr>
+      <tr><td><b>Day packing</b>: assign days from that IP, then pack each day exactly with CP-SAT</td><td><span class="chip e">extension</span></td><td>fast plans for very large weeks</td></tr>
+    </tbody></table></div>
+  <div class="fig" id="f-results"></div>
+  <p class="cap">Gap per instance size at the paper's time budget (2 h column generation, 2 h branching, 1 h final IP, one CPU core). Set A: long cases, 6 rooms; B: long cases, fewer rooms; C: short cases. Our instances are rebuilt from the paper's description, not the originals.</p>
+  <h3>Bugs found by our verification tests</h3>
+  <div class="scroll"><table><tbody>
+    <tr><td>A node was discarded as infeasible because placeholder ("artificial") variables were positive, although they only carry a finite penalty</td><td><span class="chip x">invalid 0% gap</span></td></tr>
+    <tr><td>A "≥ k cases" branch made the RMP infeasible before pricing could add schedules</td><td><span class="chip x">wrong pruning</span></td></tr>
+    <tr><td>An upper limit x ≤ 1 on columns distorted reduced costs</td><td><span class="chip x">bound logic</span></td></tr>
+    <tr><td>LP solver thread settings clashed inside one process</td><td><span class="chip x">silent failure</span></td></tr>
+    <tr><td>A what-if changed the patient list; day packing dropped mandatory cases</td><td><span class="chip x">scenario errors</span></td></tr>
+  </tbody></table></div>
+  <p class="take"><b>Scale lesson.</b> For a 300-case, 10-day, 14-surgeon fortnight, branch-and-price did not converge in 30 minutes. The day-level bound plus day packing produced plans proven within 0.6–1.0% of optimal in about 5 minutes. The decomposition idea carries over; where to split the problem depends on its size.</p>
+</section>
+
+<section class="lesson" id="l12">
+  <h2><span class="n">12</span>Check yourself</h2>
+  <details class="q"><summary>What exactly is a column?</summary><p>One valid schedule of one room on one day (cases, order, start times, cleanings). It is one column of the master problem's matrix.</p></details>
+  <details class="q"><summary>What does a dual price tell you?</summary><p>How much the master's objective would rise if that constraint were loosened by one unit; the value of that resource at the current solution.</p></details>
+  <details class="q"><summary>Why does a schedule with σ &gt; 0 improve the master?</summary><p>Its minutes exceed the prices of all resources it uses, so the LP gains by using some of it.</p></details>
+  <details class="q"><summary>Why is pricing solved separately per day?</summary><p>Each schedule belongs to one day and its reduced cost only involves that day's prices.</p></details>
+  <details class="q"><summary>When is the LP value a valid upper bound?</summary><p>Only after pricing proves no schedule with σ &gt; 0 exists (phase 1). Earlier, use the Lagrangian bound.</p></details>
+  <details class="q"><summary>What does the knapsack check do?</summary><p>Computes an optimistic σ in microseconds; if even that is ≤ 0, the day's CP search is skipped. The paper skips about 14% of searches this way.</p></details>
+  <details class="q"><summary>What does Ryan–Foster branching split on?</summary><p>Whether two specific cases share a room; both children keep valid schedules and pricing enforces the choice.</p></details>
+  <details class="q"><summary>Why not just round the LP solution?</summary><p>Rounded schedules usually clash: a case twice, a surgeon in two rooms, too many rooms. Branching and the final IP restore a valid plan.</p></details>
+</section>
+</main>
+
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const S = (w, h, inner, label) => `<svg viewBox="0 0 ${w} ${h}" class="${w >= 600 ? "wide" : ""}" role="img" aria-label="${label}">${inner}</svg>`;
+const box = (x, y, w, h, fill, stroke, rx = 8) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+const txt = (x, y, s, cls = "", anchor = "middle", extra = "") => `<text x="${x}" y="${y}" text-anchor="${anchor}" class="${cls}" ${extra}>${s}</text>`;
+const arrow = (x1, y1, x2, y2, c = "var(--ink-3)") => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="1.6" marker-end="url(#ah)"/>`;
+const defs = `<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)"/></marker>
+<pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.5" height="6" fill="rgba(255,255,255,.55)"/></pattern></defs>`;
+const tip = $("#tip");
+document.addEventListener("pointermove", e => { const t = e.target.closest("[data-tip]"); if (!t) { tip.hidden = true; return; }
+  tip.textContent = t.getAttribute("data-tip"); tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 270) + "px"; tip.style.top = (e.clientY + 14) + "px"; });
+
+/* hero loop */
+$("#big-loop").innerHTML = S(900, 280, defs +
+  box(10, 92, 140, 66, "var(--wash)", "var(--line)") + txt(80, 120, "Greedy heuristic", "t-ink", "middle", 'font-weight="600"') + txt(80, 139, "first columns") +
+  box(210, 82, 180, 86, "var(--accent-soft)", "var(--accent)") + txt(300, 112, "Master LP", "t-ink", "middle", 'font-weight="600"') + txt(300, 131, "choose room-days") + txt(300, 149, "gives dual prices π") +
+  box(500, 82, 200, 86, "var(--a3-soft)", "var(--a3)") + txt(600, 112, "CP pricing, per day", "t-ink", "middle", 'font-weight="600"') + txt(600, 131, "a room-day with σ > 0?") + txt(600, 149, "DR1–4 + knapsack check") +
+  box(210, 212, 180, 58, "var(--a2-soft)", "var(--a2)") + txt(300, 237, "Cover cuts", "t-ink", "middle", 'font-weight="600"') + txt(300, 255, "on surgeon limits") +
+  box(500, 212, 200, 58, "var(--wash)", "var(--line)") + txt(600, 237, "Branch", "t-ink", "middle", 'font-weight="600"') + txt(600, 255, "#cases · surgeon · pair") +
+  box(770, 82, 120, 86, "var(--wash)", "var(--a4)") + txt(830, 112, "Final IP", "t-ink", "middle", 'font-weight="600"') + txt(830, 131, "plan + bound") + txt(830, 149, "→ gap") +
+  arrow(150, 125, 207, 125) +
+  arrow(390, 106, 497, 106) + txt(444, 98, "prices π") +
+  arrow(497, 146, 393, 146) + txt(444, 162, "new columns") +
+  arrow(270, 168, 270, 209) + arrow(330, 209, 330, 171) + txt(222, 194, "LP", "", "start") + txt(338, 194, "cuts", "", "start") +
+  arrow(600, 168, 600, 209) + txt(608, 194, "none, LP fractional", "", "start") +
+  arrow(497, 240, 393, 158) + txt(470, 212, "children", "", "end") +
+  arrow(700, 125, 767, 125) + txt(734, 72, "none, LP integral", "", "middle") + txt(734, 86, "or time up", "", "middle"), "Algorithm overview: heuristic, master LP and pricing loop, cuts, branching, final IP");
+
+/* lesson 1: problem gantt */
+(() => { const W = 760, X = m => 90 + m / 480 * 640;
+  const rooms = [[["Ortho", 0, 150, "var(--accent)", 0], ["clean", 150, 180], ["Gen", 180, 255, "var(--a2)", 1], ["Gen", 255, 400, "var(--a2)", 1]],
+                 [["Gen", 0, 120, "var(--a2)", 0], ["Ortho", 170, 330, "var(--accent)", 0], ["Vasc", 330, 470, "var(--a3)", 0]]];
+  let g = defs;
+  for (let m = 0; m <= 480; m += 60) g += `<line x1="${X(m)}" x2="${X(m)}" y1="22" y2="128" stroke="var(--line)" stroke-dasharray="2 3"/>` + txt(X(m), 16, String(8 + m / 60).padStart(2, "0") + ":00", "t-mono");
+  rooms.forEach((r, k) => { const y = 30 + k * 50; g += txt(80, y + 24, "OR " + (k + 1), "t-ink", "end") + `<rect x="90" y="${y}" width="640" height="38" rx="6" fill="var(--wash)"/>`;
+    for (const [nm, a, b, col, inf] of r) { if (nm === "clean") { g += `<rect x="${X(a) + 1}" y="${y + 9}" width="${X(b) - X(a) - 2}" height="20" rx="4" fill="var(--clean)" data-tip="Cleaning: next case has a different infection status"/>`; continue; }
+      g += `<g data-tip="${nm} case ${inf ? "(infectious)" : ""}"><rect x="${X(a) + 1}" y="${y + 4}" width="${X(b) - X(a) - 2}" height="30" rx="5" fill="${col}"/>${inf ? `<rect x="${X(a) + 1}" y="${y + 4}" width="${X(b) - X(a) - 2}" height="30" rx="5" fill="url(#hatch)"/>` : ""}${txt((X(a) + X(b)) / 2, y + 23, nm, "t-white")}</g>`; } });
+  g += `<path d="M${X(150)},74 C${X(160)},96 ${X(165)},96 ${X(170)},112" fill="none" stroke="var(--crit)" stroke-width="1.5" stroke-dasharray="4 3"/>` + txt(X(158) + 8, 150, "Ortho surgeon moves rooms: must not overlap", "", "start");
+  $("#f-problem").innerHTML = S(W, 160, g, "Two rooms on one day"); })();
+
+/* lesson 2: gaps bar chart */
+(() => { const d = [["Compact IP", 46.94], ["Pure CP", 17.68], ["CP then IP", 11.84], ["Column generation", 9.9], ["Enhanced CG", 7.82], ["Branch-and-price", 5.36], ["Price-and-cut", 4.76], ["Branch-price-cut", 2.81]];
+  let g = ""; d.forEach(([n, v], i) => { const y = 8 + i * 28, w = v / 50 * 520; const hi = i === d.length - 1;
+    g += txt(150, y + 15, n, hi ? "t-ink" : "", "end") + `<rect x="160" y="${y}" width="${Math.max(2, w)}" height="20" rx="4" fill="${hi ? "var(--accent)" : "var(--ink-3)"}" data-tip="${n}: ${v}% average gap"/>` + txt(166 + w, y + 15, v.toFixed(2) + "%", "t-mono", "start"); });
+  $("#f-gaps").innerHTML = S(760, 236, g, "Average gaps by method"); })();
+
+/* lesson 3: master matrix */
+(() => { const cols = [["Mon OR1", [1, 1, 0, 0, 0], "Mon"], ["Mon OR2", [0, 0, 1, 1, 0], "Mon"], ["Mon alt", [1, 0, 1, 0, 0], "Mon"], ["Tue OR1", [0, 1, 0, 0, 1], "Tue"], ["Tue alt", [0, 0, 0, 1, 1], "Tue"]];
+  const rows = ["case A", "case B", "case C", "case D", "case E", "rooms Mon", "rooms Tue", "surgeon min", "surgeon slots"];
+  let g = ""; const x0 = 140, cw = 92, y0 = 40, rh = 24;
+  cols.forEach(([n], j) => g += txt(x0 + j * cw + cw / 2, 26, n, "t-ink"));
+  rows.forEach((r, i) => { g += txt(x0 - 10, y0 + i * rh + 16, r, i < 5 ? "t-ink" : "", "end"); if (i === 5) g += `<line x1="${x0}" x2="${x0 + cols.length * cw}" y1="${y0 + i * rh - 2}" y2="${y0 + i * rh - 2}" stroke="var(--line)" stroke-width="1.5"/>`; });
+  cols.forEach(([n, c, day], j) => { const cx = x0 + j * cw + cw / 2;
+    g += `<rect x="${x0 + j * cw + 8}" y="${y0 - 4}" width="${cw - 16}" height="${rows.length * rh + 8}" rx="8" fill="var(--wash)"/>`;
+    c.forEach((v, i) => { if (v) g += `<circle cx="${cx}" cy="${y0 + i * rh + 12}" r="7" fill="var(--accent)"/>`; });
+    const ri = day === "Mon" ? 5 : 6; g += `<circle cx="${cx}" cy="${y0 + ri * rh + 12}" r="7" fill="var(--a2)"/>`;
+    g += `<rect x="${cx - 16}" y="${y0 + 7 * rh + 5}" width="32" height="14" rx="3" fill="var(--a3)"/>` + `<rect x="${cx - 16}" y="${y0 + 8 * rh + 5}" width="32" height="14" rx="3" fill="var(--a5)" opacity=".8"/>`; });
+  g += txt(x0 + cols.length * cw + 12, y0 + 2 * rh + 16, "each case: once", "", "start") + txt(x0 + cols.length * cw + 12, y0 + 6 * rh, "≤ rooms per day", "", "start") + txt(x0 + cols.length * cw + 12, y0 + 8 * rh + 10, "≤ caps, no overlap", "", "start");
+  $("#f-master").innerHTML = S(760, 270, g, "Master problem matrix: columns are room-days, rows are constraints"); })();
+
+/* lesson 4: receipt */
+(() => { const items = [["Minutes in the column", 300, "var(--accent)"], ["Case prices", -150, "var(--a2)"], ["Surgeon-minute prices", -40, "var(--a2)"], ["Busy-slot prices", -35, "var(--a2)"], ["Room price", -45, "var(--a2)"]];
+  let g = "", acc = 0; const X = v => 300 + v * 1.2;
+  items.forEach(([n, v, c], i) => { const y = 10 + i * 34, a = X(acc), b = X(acc + v); g += txt(285, y + 18, n, "t-ink", "end") + `<rect x="${Math.min(a, b)}" y="${y}" width="${Math.abs(b - a)}" height="24" rx="4" fill="${c}" data-tip="${n}: ${v > 0 ? "+" : ""}${v}"/>` + txt(Math.max(a, b) + 6, y + 17, (v > 0 ? "+" : "") + v, "t-mono", "start"); acc += v; });
+  const y = 10 + items.length * 34; g += txt(285, y + 18, "Reduced cost σ", "t-ink", "end") + `<rect x="${X(0)}" y="${y}" width="${X(acc) - X(0)}" height="24" rx="4" fill="var(--a3)"/>` + txt(X(acc) + 6, y + 17, "σ = +" + acc + " → add it", "t-mono", "start");
+  g += `<line x1="${X(0)}" x2="${X(0)}" y1="4" y2="${y + 30}" stroke="var(--ink-3)"/>`;
+  $("#f-receipt").innerHTML = S(760, y + 36, g, "Reduced cost as a receipt"); })();
+
+/* lesson 5: CP positions */
+(() => { const X = m => 70 + m / 480 * 640; let g = defs;
+  const seq = [["W₁ = hernia", 0, 60, "var(--a2)", 0], ["W₂ = colectomy", 60, 240, "var(--a2)", 1], ["clean", 240, 285], ["W₃ = lap chole", 285, 360, "var(--a2)", 0]];
+  g += `<rect x="70" y="40" width="640" height="44" rx="6" fill="var(--wash)"/>`;
+  for (const [n, a, b, c, inf] of seq) { if (n === "clean") { g += `<rect x="${X(a) + 1}" y="50" width="${X(b) - X(a) - 2}" height="24" rx="4" fill="var(--clean)"/>` + txt((X(a) + X(b)) / 2, 104, "+ OCT", "t-mono"); continue; }
+    g += `<rect x="${X(a) + 1}" y="44" width="${X(b) - X(a) - 2}" height="36" rx="5" fill="${c}"/>${inf ? `<rect x="${X(a) + 1}" y="44" width="${X(b) - X(a) - 2}" height="36" rx="5" fill="url(#hatch)"/>` : ""}` + txt((X(a) + X(b)) / 2, 66, n, "t-white") + txt(X(a) + 2, 30, "V=" + a, "t-mono", "start"); }
+  g += `<rect x="${X(360) + 1}" y="44" width="${X(480) - X(360) - 2}" height="36" rx="5" fill="none" stroke="var(--ink-3)" stroke-dasharray="4 3"/>` + txt((X(360) + X(480)) / 2, 66, "W₄ = 0 (empty)") ;
+  g += txt(70, 128, "Rule (10): empty positions only at the end · (11): start ≥ previous end + cleaning · (14): surgeon minutes · (19): σ ≥ 0", "", "start");
+  $("#f-cp").innerHTML = S(760, 140, g, "One room-day as positions"); })();
+
+/* lesson 6: DR1 + knapsack */
+(() => { let g = `<rect x="10" y="22" width="300" height="24" rx="4" fill="var(--wash)"/><rect x="10" y="22" width="6" height="24" fill="var(--a3)"/><rect x="16" y="22" width="60" height="24" fill="var(--crit-soft)"/><rect x="76" y="22" width="234" height="24" fill="var(--a3-soft)"/>` +
+    txt(13, 16, "0", "t-mono", "start") + txt(76, 16, "SD", "t-mono") + txt(46, 62, "removed", "") + txt(190, 62, "allowed starts", "");
+  $("#f-dr1").innerHTML = S(320, 70, g, "DR1 start-time window"); })();
+(() => { const its = [["case 1", 120, 70], ["case 2", 150, 75], ["case 3", 90, 40], ["case 4", 200, 50]];
+  const X = m => 40 + m / 480 * 640; let g = `<rect x="40" y="6" width="640" height="34" rx="6" fill="var(--wash)"/>`, acc = 0, val = 0;
+  for (const [n, t, v] of its) { const take = Math.min(t, 480 - acc), w = X(acc + take) - X(acc); if (take <= 0) break; const frac = take / t;
+    g += `<rect x="${X(acc) + 1}" y="10" width="${w - 2}" height="26" rx="4" fill="${frac < 1 ? "var(--a2)" : "var(--a3)"}" data-tip="${n}: ${t} min, worth ${v}${frac < 1 ? "; only " + take + " min fit, so " + frac.toFixed(1) + " of it counts" : ""}"/>` + txt(X(acc) + w / 2, 27, frac < 1 ? `${n} × ${frac.toFixed(1)}` : n, "t-white"); acc += take; val += v * frac; }
+  g += txt(40, 58, "Room day 480 min · cases sorted by value per minute · the last one counted fractionally", "", "start") + txt(40, 80, "bound on σ = " + Math.round(val) + " − room price", "t-mono", "start");
+  $("#f-knap").innerHTML = S(720, 88, g, "Greedy knapsack bound"); })();
+
+/* lesson 7: CG convergence with stepper (real data B-50) */
+const IT = [[1, 7760, 518800, 90, 0], [2, 7760, 373456, 145, 0], [3, 7760, 53126.7, 240, 0], [4, 8210.7, 14492.7, 316, 0], [5, 8447.4, 13944.1, 422, 0], [6, 8568.6, 8779.8, 486, 0], [7, 8569, 8729, 487, 0], [8, 8569, 8569, 487, 0], [9, 8569, 8569, 487, 1]];
+const NOTES = ["Start: only greedy columns; the bound is huge because pricing still finds big improvements.", "Pricing adds 55 columns; LP unchanged yet, prices shift.", "Bound collapses as pricing values fall.", "LP rises: new room-days beat the greedy ones.", "LP 8,447; bound 13,944.", "LP 8,569; bound 8,780: nearly converged.", "One more column.", "Phase 0 finds no column with σ > 0.", "Phase 1 proves it: LP 8,569 min is a valid bound. Branching later tightened it to 8,485, and the final plan was 8,310 (gap 2.06%)."];
+let cgStep = IT.length;
+function drawCG() {
+  const W = 760, H = 250, pl = 64, pr = 20, pt = 14, pb = 34, y0 = 7500, y1 = 15000;
+  const X = i => pl + (i - 1) / (IT.length - 1) * (W - pl - pr), Y = v => H - pb - (Math.min(v, y1) - y0) / (y1 - y0) * (H - pt - pb);
+  let g = "";
+  for (let v = 8000; v <= 15000; v += 1000) g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-dasharray="2 3"/>` + txt(pl - 8, Y(v) + 4, v.toLocaleString(), "t-mono", "end");
+  IT.forEach((r, i) => g += txt(X(r[0]), H - pb + 18, r[0], "t-mono"));
+  g += txt((pl + W - pr) / 2, H - 4, "iteration (root node)");
+  const shown = IT.slice(0, cgStep);
+  const line = (k, c, dash) => `<polyline fill="none" stroke="${c}" stroke-width="2.2" ${dash ? 'stroke-dasharray="6 4"' : ""} points="${shown.map(r => X(r[0]) + "," + Y(r[k])).join(" ")}"/>` +
+    shown.map(r => `<circle cx="${X(r[0])}" cy="${Y(r[k])}" r="${r[k] > y1 ? 5 : 4}" fill="${r[k] > y1 ? "var(--paper)" : c}" stroke="${c}" stroke-width="2" data-tip="iteration ${r[0]}: ${k === 1 ? "LP" : "bound"} ${Math.round(r[k]).toLocaleString()} min${r[k] > y1 ? " (off the chart)" : ""}"/>`).join("");
+  g += line(2, "var(--a2)", true) + line(1, "var(--accent)", false);
+  g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(8310)}" y2="${Y(8310)}" stroke="var(--a3)" stroke-width="1.5"/>` + txt(W - pr - 4, Y(8310) + 15, "final plan 8,310", "", "end");
+  $("#f-cg").innerHTML = S(W, H, g, "Column generation convergence");
+  $("#cg-note").textContent = `Iteration ${cgStep}: ${NOTES[cgStep - 1]}`;
+  $("#cg-steps").innerHTML = IT.map(r => `<button type="button" aria-pressed="${r[0] === cgStep}" data-i="${r[0]}">${r[0]}</button>`).join("");
+}
+$("#cg-steps").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { cgStep = +b.dataset.i; drawCG(); } });
+drawCG();
+
+/* lesson 8: cover */
+(() => { const X = m => 40 + m / 420 * 640; let g = `<line x1="${X(330)}" x2="${X(330)}" y1="8" y2="80" stroke="var(--crit)" stroke-width="2"/>` + txt(X(330), 96, "surgeon cap 330 min", "", "middle");
+  [["A 120", 0, 120], ["B 110", 120, 230], ["C 140", 230, 370]].forEach(([n, a, b], i) => g += `<rect x="${X(a) + 1}" y="22" width="${X(b) - X(a) - 2}" height="36" rx="5" fill="${b > 330 ? "var(--a2)" : "var(--accent)"}"/>` + txt((X(a) + X(b)) / 2, 45, n, "t-white"));
+  g += txt(X(370) + 10, 45, "→ z_A + z_B + z_C ≤ 2", "t-mono", "start");
+  $("#f-cover").innerHTML = S(760, 104, g, "Cover inequality"); })();
+
+/* lesson 9: tree */
+(() => { const n = (x, y, t, s, c) => box(x - 75, y, 150, 44, c, "var(--line)") + txt(x, y + 18, t, "t-ink") + txt(x, y + 34, s, "t-mono");
+  let g = defs + n(380, 6, "root", "LP 8,569", "var(--accent-soft)") +
+    arrow(340, 50, 200, 88) + arrow(420, 50, 560, 88) + n(200, 90, "#cases ≥ 42", "LP 8,540", "var(--wash)") + n(560, 90, "#cases ≤ 41", "LP 8,290 · pruned", "var(--crit-soft)") +
+    arrow(170, 134, 100, 172) + arrow(230, 134, 300, 172) + n(100, 174, "A & B same room", "integral 8,310", "var(--a3-soft)") + n(300, 174, "A & B apart", "LP 8,485", "var(--wash)") ;
+  $("#f-tree").innerHTML = S(760, 226, g, "Branch-and-bound tree (illustrative numbers)"); })();
+
+/* lesson 10: gap */
+(() => { const X = v => 40 + (v - 7600) / 1100 * 660; let g = `<line x1="40" x2="700" y1="40" y2="40" stroke="var(--line)" stroke-width="2"/>`;
+  [[7760, "greedy 7,760", "var(--ink-3)"], [8310, "plan 8,310", "var(--a3)"], [8485, "bound 8,485", "var(--a2)"], [8569, "root LP 8,569", "var(--accent)"]].forEach(([v, l, c], i) =>
+    g += `<circle cx="${X(v)}" cy="40" r="7" fill="${c}"/>` + txt(X(v), i % 2 ? 72 : 22, l, "t-mono"));
+  g += `<rect x="${X(8310)}" y="34" width="${X(8485) - X(8310)}" height="12" rx="3" fill="var(--a2)" opacity=".35"/>` + txt((X(8310) + X(8485)) / 2, 96, "gap 2.06%: the true optimum lies in here", "", "middle");
+  $("#f-gap").innerHTML = S(760, 104, g, "Plan, bound and gap"); })();
+
+/* lesson 11: results */
+(() => { const d = [["A40", 0, 0], ["A60", .55, 0], ["A80", 1.3, 0], ["A100", 1.81, .04], ["A120", 1.4, 5.7], ["B40", 0, .22], ["B60", .55, 0], ["B80", 1.32, 0], ["B100", 2.65, .09], ["B120", 4.13, 5.7], ["C60", .94, 3.36], ["C80", 9.92, 0], ["C100", 12.01, 15.68]];
+  const W = 760, H = 230, pl = 40, pb = 32, bw = (W - pl - 10) / d.length, Y = v => H - pb - v / 16 * (H - pb - 14);
+  let g = ""; for (let v = 0; v <= 16; v += 4) g += `<line x1="${pl}" x2="${W - 10}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-dasharray="2 3"/>` + txt(pl - 6, Y(v) + 4, v + "%", "t-mono", "end");
+  d.forEach(([n, p, o], i) => { const x = pl + i * bw;
+    g += `<rect x="${x + bw * .14}" y="${Y(p)}" width="${bw * .34}" height="${Y(0) - Y(p) + .01}" rx="2" fill="var(--ink-3)" data-tip="${n} paper: ${p}%"/>` +
+         `<rect x="${x + bw * .52}" y="${Y(o)}" width="${bw * .34}" height="${Y(0) - Y(o) + .01}" rx="2" fill="var(--accent)" data-tip="${n} ours: ${o}%"/>` + txt(x + bw / 2, H - pb + 16, n, "t-mono"); });
+  g += `<rect x="${pl + 8}" y="6" width="10" height="10" fill="var(--ink-3)"/>` + txt(pl + 24, 15, "paper", "", "start") + `<rect x="${pl + 80}" y="6" width="10" height="10" fill="var(--accent)"/>` + txt(pl + 96, 15, "ours, paper method (avg 2.37% vs 2.81%)", "", "start");
+  $("#f-results").innerHTML = S(W, H, g, "Optimality gap per instance size"); })();
+</script>

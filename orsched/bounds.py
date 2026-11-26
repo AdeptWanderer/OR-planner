@@ -67,6 +67,8 @@ def day_level_bound(inst: Instance, integer: bool = True, time_limit: float = 60
             row([j for j, _ in allj], [t for _, t in allj], -INF, float(inst.rooms[d] * inst.slots_per_day))
     h.run()
     st = h.getModelStatus()
+    if st == highspy.HighsModelStatus.kInfeasible:
+        return -1.0, {}, True                           # proven infeasible: mandatory cases cannot all fit
     info = h.getInfo()
     if integer:
         bound = -info.mip_dual_bound if np.isfinite(info.mip_dual_bound) else float("inf")

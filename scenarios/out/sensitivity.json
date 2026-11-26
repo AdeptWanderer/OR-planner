@@ -1,0 +1,230 @@
+{
+ "base": 28765.0,
+ "rooms_mon_thu": [
+  [
+   5,
+   23900.0
+  ],
+  [
+   6,
+   27550.0
+  ],
+  [
+   7,
+   28765.0
+  ],
+  [
+   8,
+   28765.0
+  ],
+  [
+   9,
+   28765.0
+  ],
+  [
+   10,
+   28765.0
+  ]
+ ],
+ "rooms_fri": [
+  [
+   3,
+   28765.0
+  ],
+  [
+   4,
+   28765.0
+  ],
+  [
+   5,
+   28765.0
+  ],
+  [
+   6,
+   28765.0
+  ],
+  [
+   7,
+   28765.0
+  ],
+  [
+   8,
+   28765.0
+  ]
+ ],
+ "extra_session": [
+  {
+   "surgeon": "Ortho A",
+   "spec": "Orthopaedics",
+   "gain": 250.0,
+   "day": "Tue 1",
+   "free_days": 4
+  },
+  {
+   "surgeon": "Ortho B",
+   "spec": "Orthopaedics",
+   "gain": 395.0,
+   "day": "Mon 1",
+   "free_days": 4
+  },
+  {
+   "surgeon": "Ortho C",
+   "spec": "Orthopaedics",
+   "gain": 480.0,
+   "day": "Wed 1",
+   "free_days": 4
+  },
+  {
+   "surgeon": "General A",
+   "spec": "General surgery",
+   "gain": 0,
+   "day": null,
+   "free_days": 4
+  },
+  {
+   "surgeon": "General B",
+   "spec": "General surgery",
+   "gain": 0,
+   "day": null,
+   "free_days": 4
+  },
+  {
+   "surgeon": "General C",
+   "spec": "General surgery",
+   "gain": 0,
+   "day": null,
+   "free_days": 4
+  },
+  {
+   "surgeon": "Vascular A",
+   "spec": "Vascular",
+   "gain": 125.0,
+   "day": "Mon 1",
+   "free_days": 6
+  },
+  {
+   "surgeon": "Gynae A",
+   "spec": "Gynaecology",
+   "gain": 0,
+   "day": null,
+   "free_days": 6
+  },
+  {
+   "surgeon": "Gynae B",
+   "spec": "Gynaecology",
+   "gain": 480.0,
+   "day": "Mon 1",
+   "free_days": 4
+  },
+  {
+   "surgeon": "Urology A",
+   "spec": "Urology",
+   "gain": 0,
+   "day": null,
+   "free_days": 4
+  },
+  {
+   "surgeon": "Urology B",
+   "spec": "Urology",
+   "gain": 480.0,
+   "day": "Tue 1",
+   "free_days": 4
+  },
+  {
+   "surgeon": "Neuro A",
+   "spec": "Neurosurgery",
+   "gain": 480.0,
+   "day": "Wed 1",
+   "free_days": 4
+  },
+  {
+   "surgeon": "ENT A",
+   "spec": "ENT",
+   "gain": 0,
+   "day": null,
+   "free_days": 4
+  },
+  {
+   "surgeon": "ENT B",
+   "spec": "ENT",
+   "gain": 0,
+   "day": null,
+   "free_days": 7
+  }
+ ],
+ "overrun": [
+  [
+   0,
+   28765.0,
+   32785
+  ],
+  [
+   5,
+   29585.0,
+   35075
+  ],
+  [
+   10,
+   null,
+   36720
+  ],
+  [
+   15,
+   null,
+   38390
+  ],
+  [
+   20,
+   null,
+   39930
+  ],
+  [
+   25,
+   null,
+   41555
+  ],
+  [
+   30,
+   null,
+   43225
+  ]
+ ],
+ "availability": [
+  [
+   -20,
+   null
+  ],
+  [
+   -15,
+   null
+  ],
+  [
+   -10,
+   null
+  ],
+  [
+   -5,
+   27825.0
+  ],
+  [
+   0,
+   28765.0
+  ],
+  [
+   5,
+   28825.0
+  ],
+  [
+   10,
+   28885.0
+  ],
+  [
+   15,
+   28975.0
+  ],
+  [
+   20,
+   29035.0
+  ]
+ ]
+}
