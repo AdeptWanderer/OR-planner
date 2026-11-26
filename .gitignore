@@ -13,3 +13,7 @@ verification/reports/run*.txt
 verification/reports/ckpt/
 verification/reports/full_run.txt
 verification/reports/pricing_run3.txt
+scenarios/out/*.pkl
+scenarios/out/*.log
+scenarios/out_run1/
+scenarios/*.err

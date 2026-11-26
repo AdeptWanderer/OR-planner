@@ -42,6 +42,9 @@ class BPCParams:
     checkpoint_path: Optional[str] = None   # pickle file; resume from it if it exists
     checkpoint_every: float = 300.0         # seconds between checkpoints
     log_cap: int = 20000                    # max records kept in pricing / iteration / node logs
+    # --- scale-up options (not in the paper; defaults keep the paper's behaviour) ---
+    heuristic_starts: int = 1               # >1: multi-start constructive heuristic (random tie-breaks)
+    parallel_pricing: int = 1               # >1: solve the |D| day subproblems in parallel processes
 
 
 @dataclass
@@ -89,6 +92,12 @@ class Solver:
         self.root_bound = math.inf
         self.polish = None
         self.lb_before_polish = -math.inf
+        self._pool = None
+        if params.parallel_pricing > 1:
+            import concurrent.futures as cf
+            import multiprocessing as mp
+            self._pool = cf.ProcessPoolExecutor(max_workers=params.parallel_pricing,
+                                                mp_context=mp.get_context("fork"))
 
     # ------------------------------------------------------------- helpers
     def elapsed(self):
@@ -143,12 +152,24 @@ class Solver:
             all_proven = True
             duals = {}
             for d in range(inst.n_days):
-                G, pi6, const = master.day_duals(y, d)
-                duals[d] = (G, pi6, const)
+                duals[d] = master.day_duals(y, d)
+            remaining = max(0.5, deadline - time.time())
+            if self._pool is not None:      # independent day subproblems -> parallel processes
+                futs = [self._pool.submit(solve_pricing, inst, d, *duals[d], restr, min(tl, remaining),
+                                          p.use_dominance, p.use_fid, p.max_columns_per_sub, 1, p.seed + it)
+                        for d in range(inst.n_days)]
+                results = [f.result() for f in futs]
+            else:
+                results = None
+            for d in range(inst.n_days):
+                G, pi6, const = duals[d]
                 remaining = max(0.5, deadline - time.time())
-                cols, st = solve_pricing(inst, d, G, pi6, const, restr, min(tl, remaining),
-                                         p.use_dominance, p.use_fid, p.max_columns_per_sub,
-                                         p.workers, p.seed + it)
+                if results is not None:
+                    cols, st = results[d]
+                else:
+                    cols, st = solve_pricing(inst, d, G, pi6, const, restr, min(tl, remaining),
+                                             p.use_dominance, p.use_fid, p.max_columns_per_sub,
+                                             p.workers, p.seed + it)
                 rec = asdict(st); rec.update(node=node_id, iteration=it, day=d, phase=phase)
                 if len(self.pricing_log) < p.log_cap:
                     self.pricing_log.append(rec)
@@ -341,6 +362,13 @@ class Solver:
             self.add_pool(init_cols)
             heur_obj = sum(c.value(inst) for c in init_cols)
             heur_errs = validate_columns(inst, init_cols)
+            for k in range(1, p.heuristic_starts):      # multi-start: keep the best valid plan
+                cols_k, _ = constructive_heuristic(inst, np.random.default_rng(p.seed + 1000 + k))
+                self.add_pool(cols_k)
+                if not validate_columns(inst, cols_k):
+                    v = sum(c.value(inst) for c in cols_k)
+                    if heur_errs or v > heur_obj:
+                        init_cols, heur_obj, heur_errs = cols_k, v, []
             self.heuristic = dict(objective=heur_obj, columns=init_cols, errors=heur_errs)
             self.trivial_ub = min(sum(inst.rooms[d] * inst.slots_per_day for d in range(inst.n_days)),
                                   int(inst.surgeon_max.sum()), sum(s.duration for s in inst.surgeries))
