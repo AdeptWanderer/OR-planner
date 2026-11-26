@@ -59,7 +59,7 @@ LEAVE_WEEK2 = {"ENT B"}           # planned leave in week 2
 INFECTIONS = {1: "MRSA", 2: "VRE", 3: "C. diff"}
 
 
-def build(n_cases=300, seed=7, friday_rooms=6, extra_leave_week2=(), cleaning_min=45):
+def build(n_cases=300, seed=7, friday_rooms=6, extra_leave_week2=(), cleaning_min=45, neuro_extra_sessions=False):
     rng = np.random.default_rng(seed)
     L, D = len(SURGEONS), len(DAYS)
     A = np.zeros((L, D), dtype=int)          # planned calendars: the waiting list is built on these
@@ -104,6 +104,10 @@ def build(n_cases=300, seed=7, friday_rooms=6, extra_leave_week2=(), cleaning_mi
     for l, (name, _, _) in enumerate(SURGEONS):
         if name in extra_leave_week2:
             A[l, 5:] = 0
+    if neuro_extra_sessions:                 # what-if: Neuro A gets Wed + Fri sessions in both weeks
+        nl = [n for n, _, _ in SURGEONS].index("Neuro A")
+        for d in (2, 4, 7, 9):
+            A[nl, d] = DAY_MIN // SLOT
     rooms = [8, 8, 8, 8, friday_rooms] * 2
     inst = Instance(surgeries=cases, n_days=D, rooms=rooms, slots_per_day=DAY_MIN // SLOT,
                     surgeon_max=A, cleaning=cleaning_min // SLOT, slot_minutes=SLOT,
@@ -127,3 +131,51 @@ if __name__ == "__main__":
     cols, post = constructive_heuristic(inst, np.random.default_rng(0))
     errs = validate_columns(inst, cols)
     print("heuristic minutes", sum(c.value(inst) for c in cols) * SLOT, "errors", len(errs), errs[:5])
+
+
+def protect_at_risk(inst, surgeon_name, first_free_day=0):
+    """Choose which of a surgeon's week-2-deadline cases to protect when that
+    surgeon has no week-2 OR time (unplanned leave).
+
+    Small day-level MIP over that surgeon's cases only: week-1 deadlines are hard;
+    maximise the NUMBER of week-2-deadline cases operated in week 1 (shorter
+    cases first), ties broken by minutes.  Returns (protected, breached) lists of
+    case ids.  Category-3 cases are not considered (they can wait)."""
+    import highspy
+    l = inst.surgeon_names.index(surgeon_name)
+    H = 5
+    hard = [s for s in inst.surgeries if s.surgeon == l and inst.is_mandatory(s.id) and s.deadline < H]
+    risk = [s for s in inst.surgeries if s.surgeon == l and inst.is_mandatory(s.id) and s.deadline >= H]
+    cand = hard + risk
+    h = highspy.Highs(); h.setOptionValue("output_flag", False); h.setOptionValue("time_limit", 60.0)
+    h.setOptionValue("threads", 1)      # HiGHS has one global thread pool per process: all instances must agree
+    var, n = {}, 0
+    for s in cand:
+        for d in range(first_free_day, min(s.deadline + 1, H)):
+            if s.duration <= inst.surgeon_max[l, d]:
+                var[(s.id, d)] = n; n += 1
+    cost = np.zeros(n)
+    ids_risk = {s.id for s in risk}
+    for (i, d), j in var.items():
+        if i in ids_risk:
+            cost[j] = -(10000 + inst.surgeries[i].duration)
+    h.addVars(n, np.zeros(n), np.ones(n))
+    h.changeColsCost(n, np.arange(n, dtype=np.int32), cost)
+    h.changeColsIntegrality(n, np.arange(n, dtype=np.int32), np.array([highspy.HighsVarType.kInteger] * n))
+    INF = highspy.kHighsInf
+    for s in cand:
+        js = [var[(s.id, d)] for d in range(H) if (s.id, d) in var]
+        if not js:
+            continue
+        h.addRow(1.0 if s.id in {x.id for x in hard} else -INF, 1.0, len(js), np.array(js, dtype=np.int32), np.ones(len(js)))
+    for d in range(H):
+        js = [(var[(s.id, d)], s.duration) for s in cand if (s.id, d) in var]
+        if js:
+            h.addRow(-INF, float(inst.surgeon_max[l, d]), len(js), np.array([j for j, _ in js], dtype=np.int32),
+                     np.array([t for _, t in js], dtype=float))
+    h.run()
+    x = h.getSolution().col_value
+    done = {i for (i, d), j in var.items() if x[j] > 0.5}
+    protected = [s.id for s in risk if s.id in done]
+    breached = [s.id for s in risk if s.id not in done]
+    return protected, breached

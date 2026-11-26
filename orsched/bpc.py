@@ -45,6 +45,9 @@ class BPCParams:
     # --- scale-up options (not in the paper; defaults keep the paper's behaviour) ---
     heuristic_starts: int = 1               # >1: multi-start constructive heuristic (random tie-breaks)
     parallel_pricing: int = 1               # >1: solve the |D| day subproblems in parallel processes
+    day_level_bound: bool = False           # tighter initial upper bound from the day-level MIP (orsched.bounds)
+    dayplan_start: bool = False             # day-decomposition start heuristic (orsched.dayplan)
+    dayplan_time: float = 30.0              # CP-SAT seconds per day for it
 
 
 @dataclass
@@ -97,7 +100,7 @@ class Solver:
             import concurrent.futures as cf
             import multiprocessing as mp
             self._pool = cf.ProcessPoolExecutor(max_workers=params.parallel_pricing,
-                                                mp_context=mp.get_context("fork"))
+                                                mp_context=mp.get_context("forkserver"))  # fork() of a threaded process can deadlock
 
     # ------------------------------------------------------------- helpers
     def elapsed(self):
@@ -362,6 +365,18 @@ class Solver:
             self.add_pool(init_cols)
             heur_obj = sum(c.value(inst) for c in init_cols)
             heur_errs = validate_columns(inst, init_cols)
+            if p.dayplan_start:
+                from .dayplan import dayplan_heuristic
+                dcols, dinfo = dayplan_heuristic(inst, p.dayplan_time, max(1, p.workers), log=self.logf)
+                self.add_pool(dcols)
+                if not validate_columns(inst, dcols):
+                    v = sum(c.value(inst) for c in dcols)
+                    self.logf(f"dayplan start: valid plan {v * inst.slot_minutes} min")
+                    if heur_errs or v > heur_obj:
+                        init_cols, heur_obj, heur_errs = dcols, v, []
+                else:
+                    self.logf(f"dayplan start: not a valid plan ({dinfo['unscheduled_mandatory_last_chance']} "
+                              f"mandatory cases missed); its columns are added to the pool")
             for k in range(1, p.heuristic_starts):      # multi-start: keep the best valid plan
                 cols_k, _ = constructive_heuristic(inst, np.random.default_rng(p.seed + 1000 + k))
                 self.add_pool(cols_k)
@@ -372,6 +387,12 @@ class Solver:
             self.heuristic = dict(objective=heur_obj, columns=init_cols, errors=heur_errs)
             self.trivial_ub = min(sum(inst.rooms[d] * inst.slots_per_day for d in range(inst.n_days)),
                                   int(inst.surgeon_max.sum()), sum(s.duration for s in inst.surgeries))
+            if p.day_level_bound:
+                from .bounds import day_level_bound
+                dub, _, _ = day_level_bound(inst, integer=True, time_limit=120)
+                if dub >= 0:
+                    self.trivial_ub = min(self.trivial_ub, int(dub))
+                self.logf(f"day-level relaxation bound: {self.trivial_ub * inst.slot_minutes} min")
             if not heur_errs:
                 self.update_incumbent(init_cols, heur_obj, "constructive heuristic")
         heur_obj, heur_errs = self.heuristic["objective"], self.heuristic["errors"]

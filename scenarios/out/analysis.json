@@ -1,0 +1,190 @@
+{
+ "scenarios": [
+  {
+   "name": "Baseline",
+   "bound": 28715.0,
+   "proved": true,
+   "demand": 32785
+  },
+  {
+   "name": "8 rooms on Fridays",
+   "bound": 28715.0,
+   "proved": true,
+   "demand": 32785
+  },
+  {
+   "name": "Neuro A extra Wed + Fri sessions",
+   "bound": 30400.0,
+   "proved": true,
+   "demand": 32785
+  },
+  {
+   "name": "Neuro A extra sessions + 8 Friday rooms",
+   "bound": 30400.0,
+   "proved": true,
+   "demand": 32785
+  }
+ ],
+ "surgeons": [
+  {
+   "name": "Ortho A",
+   "spec": "Orthopaedics",
+   "capacity": 2880,
+   "demand": 3130,
+   "unmet": 250
+  },
+  {
+   "name": "Ortho B",
+   "spec": "Orthopaedics",
+   "capacity": 2880,
+   "demand": 3275,
+   "unmet": 400
+  },
+  {
+   "name": "Ortho C",
+   "spec": "Orthopaedics",
+   "capacity": 2400,
+   "demand": 2890,
+   "unmet": 490
+  },
+  {
+   "name": "General A",
+   "spec": "General surgery",
+   "capacity": 2880,
+   "demand": 2050,
+   "unmet": 0
+  },
+  {
+   "name": "General B",
+   "spec": "General surgery",
+   "capacity": 2400,
+   "demand": 1840,
+   "unmet": 0
+  },
+  {
+   "name": "General C",
+   "spec": "General surgery",
+   "capacity": 2400,
+   "demand": 1410,
+   "unmet": 0
+  },
+  {
+   "name": "Vascular A",
+   "spec": "Vascular",
+   "capacity": 1920,
+   "demand": 2045,
+   "unmet": 130
+  },
+  {
+   "name": "Gynae A",
+   "spec": "Gynaecology",
+   "capacity": 1920,
+   "demand": 1745,
+   "unmet": 0
+  },
+  {
+   "name": "Gynae B",
+   "spec": "Gynaecology",
+   "capacity": 2400,
+   "demand": 2985,
+   "unmet": 585
+  },
+  {
+   "name": "Urology A",
+   "spec": "Urology",
+   "capacity": 2400,
+   "demand": 2120,
+   "unmet": 0
+  },
+  {
+   "name": "Urology B",
+   "spec": "Urology",
+   "capacity": 2400,
+   "demand": 2890,
+   "unmet": 530
+  },
+  {
+   "name": "Neuro A",
+   "spec": "Neurosurgery",
+   "capacity": 2880,
+   "demand": 4565,
+   "unmet": 1685
+  },
+  {
+   "name": "ENT A",
+   "spec": "ENT",
+   "capacity": 2400,
+   "demand": 1355,
+   "unmet": 0
+  },
+  {
+   "name": "ENT B",
+   "spec": "ENT",
+   "capacity": 1200,
+   "demand": 485,
+   "unmet": 0
+  }
+ ],
+ "days": [
+  {
+   "day": "Mon 1",
+   "surgeon_minutes": 4080,
+   "room_minutes": 3840,
+   "binding": "rooms"
+  },
+  {
+   "day": "Tue 1",
+   "surgeon_minutes": 4080,
+   "room_minutes": 3840,
+   "binding": "rooms"
+  },
+  {
+   "day": "Wed 1",
+   "surgeon_minutes": 3120,
+   "room_minutes": 3840,
+   "binding": "surgeons"
+  },
+  {
+   "day": "Thu 1",
+   "surgeon_minutes": 3360,
+   "room_minutes": 3840,
+   "binding": "surgeons"
+  },
+  {
+   "day": "Fri 1",
+   "surgeon_minutes": 2640,
+   "room_minutes": 2880,
+   "binding": "surgeons"
+  },
+  {
+   "day": "Mon 2",
+   "surgeon_minutes": 3600,
+   "room_minutes": 3840,
+   "binding": "surgeons"
+  },
+  {
+   "day": "Tue 2",
+   "surgeon_minutes": 3840,
+   "room_minutes": 3840,
+   "binding": "surgeons"
+  },
+  {
+   "day": "Wed 2",
+   "surgeon_minutes": 3120,
+   "room_minutes": 3840,
+   "binding": "surgeons"
+  },
+  {
+   "day": "Thu 2",
+   "surgeon_minutes": 3360,
+   "room_minutes": 3840,
+   "binding": "surgeons"
+  },
+  {
+   "day": "Fri 2",
+   "surgeon_minutes": 2160,
+   "room_minutes": 2880,
+   "binding": "surgeons"
+  }
+ ]
+}

@@ -94,7 +94,7 @@ svg .grid { stroke: var(--line); stroke-dasharray: 2 3; } svg .axis { stroke: va
       <div class="eyebrow">Riverside Regional Hospital (fictional) · 10 operating days · 14 surgeons · 300 waiting-list cases</div>
       <h1>Riverside OR Fortnight</h1>
     </div>
-    <p class="small muted" style="max-width:56ch">Plan computed by the CP-based branch-and-price-and-cut solver (after Hashemi Doulabi, Rousseau &amp; Pesant, <i>INFORMS J. Computing</i>, 2016), with CP-SAT polishing.</p>
+    <p class="small muted" style="max-width:56ch">Plans from a day-decomposition CP-SAT heuristic, each certified by a proven upper bound (day-level relaxation). Built on the solver for Hashemi Doulabi, Rousseau &amp; Pesant, <i>INFORMS J. Computing</i>, 2016.</p>
   </header>
 
   <section class="panel" aria-label="Scenario">
@@ -117,8 +117,8 @@ svg .grid { stroke: var(--line); stroke-dasharray: 2 3; } svg .axis { stroke: va
 <script>
 const SCEN = {
   baseline: ["Baseline", "Planned calendars, 8 rooms Mon–Thu and 6 on Fridays, ENT B on planned leave in week 2."],
-  friday8: ["Staff 8 rooms on Fridays", "Same waiting list and calendars, but both Fridays run all 8 rooms."],
-  ortho_leave: ["Ortho B unplanned leave", "Same waiting list; Ortho B is also off for all of week 2. Their cases due in week 2 can no longer all meet their deadline; the optimizer chooses which still fit in week 1."]
+  neuro_sessions: ["Neuro A extra sessions", "Same waiting list; Neuro A, the most overloaded surgeon, also operates on Wednesdays and Fridays in both weeks (+4 sessions, 1,920 min)."],
+  ortho_leave: ["Ortho B unplanned leave", "Same waiting list; Ortho B is also off for all of week 2. Their 9 category-2 cases due in week 2 cannot all be met: a small knapsack over Ortho B's week-1 sessions protects as many patients as possible; the rest are flagged as breached before planning."]
 };
 const SPEC_ORDER = ["Orthopaedics", "General surgery", "Vascular", "Gynaecology", "Urology", "Neurosurgery", "ENT"];
 const SPEC_COL = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"];
@@ -248,19 +248,19 @@ function viewClinical(r) {
       min: idx.filter(i => dd.done.has(i)).reduce((a, i) => a + C[i][2], 0), dem: idx.reduce((a, i) => a + C[i][2], 0) }; });
   const frac = ([a, b]) => b ? `${a}/${b}` : "—";
   const wait = M.map((m, i) => [m, i]).filter(([, i]) => !dd.done.has(i)).sort((a, b) => a[0].category - b[0].category || C[b[1]][2] - C[a[1]][2]);
-  const risk = new Set(r.at_risk || []);
+  const brch = new Set(r.breached || []);
   return `<div style="display:grid;gap:18px"><div class="grid2">
     <section class="panel"><h2>Urgency compliance</h2><p class="small muted">Category 1 must be done within 3 days and category 2 within the fortnight; both are hard constraints of the model. Category 3 cases can wait and are brought forward where capacity allows.</p>
     <div class="scroll-x"><table><thead><tr><th>Category</th><th class="r">Done</th><th class="r">On list</th><th>Status</th></tr></thead><tbody>
     ${[1, 2, 3].map(k => { const [a, b] = dd.cat[k]; const ok = k === 3 ? a > 0 : a === b; const lbl = k === 3 ? `${fmt(a / b * 100)}% brought forward` : a === b ? "every deadline met" : `${b - a} miss their deadline`;
       return `<tr><td>Category ${k}</td><td class="r num">${a}</td><td class="r num">${b}</td><td><span class="chip ${k === 3 ? "neutral" : ok ? "good" : "crit"}">${lbl}</span></td></tr>`; }).join("")}
-    </tbody></table></div>${risk.size ? `<p class="small"><span class="chip crit">${risk.size} cases at risk</span> In this scenario Ortho B's category-2 cases due in week 2 are not all forced; see What-if.</p>` : ""}</section>
+    </tbody></table></div>${brch.size ? `<p class="small"><span class="chip crit">${brch.size} deadline breaches</span> are caused by Ortho B's leave: they are the category-2 misses counted above. See What-if.</p>` : ""}</section>
     <section class="panel"><h2>By specialty</h2><div class="scroll-x"><table><thead><tr><th>Specialty</th><th class="r">Cat 1</th><th class="r">Cat 2</th><th class="r">Cat 3</th><th class="r">Minutes done</th><th class="r">of demand</th></tr></thead><tbody>
     ${bySpec.map(x => `<tr><td><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${specColor(x.sp)};margin-right:6px"></i>${x.sp}</td><td class="r num">${frac(x.c1)}</td><td class="r num">${frac(x.c2)}</td><td class="r num">${frac(x.c3)}</td><td class="r num">${fmt(x.min)}</td><td class="r num">${fmt(x.min / x.dem * 100)}%</td></tr>`).join("")}
     </tbody></table></div></section></div>
     <section class="panel"><h2>Still waiting after this fortnight <span class="muted" style="font-weight:500">· ${wait.length} cases, ${fmt(wait.reduce((a, [, i]) => a + C[i][2], 0))} min</span></h2>
     <div class="tablebox"><table><thead><tr><th>Case</th><th>Procedure</th><th>Specialty</th><th>Surgeon</th><th class="r">Min</th><th>Category</th><th>Note</th></tr></thead><tbody>
-    ${wait.map(([m, i]) => `<tr><td class="mono">${C[i][0]}</td><td>${esc(m.procedure)}</td><td>${esc(m.specialty)}</td><td>${esc(r.surgeons[C[i][1]])}</td><td class="r num">${C[i][2]}</td><td><span class="chip ${m.category === 1 ? "crit" : m.category === 2 ? "warn" : "neutral"}">cat ${m.category}</span></td><td>${risk.has(C[i][0]) ? '<span class="chip crit">deadline breached by the leave</span>' : '<span class="muted">next planning period</span>'}</td></tr>`).join("")}
+    ${wait.map(([m, i]) => `<tr><td class="mono">${C[i][0]}</td><td>${esc(m.procedure)}</td><td>${esc(m.specialty)}</td><td>${esc(r.surgeons[C[i][1]])}</td><td class="r num">${C[i][2]}</td><td><span class="chip ${m.category === 1 ? "crit" : m.category === 2 ? "warn" : "neutral"}">cat ${m.category}</span></td><td>${brch.has(C[i][0]) ? '<span class="chip crit">deadline breached by the leave</span>' : '<span class="muted">next planning period</span>'}</td></tr>`).join("")}
     </tbody></table></div></section></div>`;
 }
 
@@ -284,28 +284,42 @@ function kpiSet(r) {
 function viewWhatif() {
   const keys = Object.keys(SCEN).filter(k => DATA[k]);
   const K = Object.fromEntries(keys.map(k => [k, kpiSet(DATA[k])]));
-  const b = K.baseline; const rows = [
-    ["Surgery minutes scheduled", k => fmt(K[k].minutes), k => K[k].minutes - b.minutes, 0, true, " min"],
-    ["Cases operated", k => fmt(K[k].cases), k => K[k].cases - b.cases, 0, true, ""],
-    ["Category 1 done", k => `${K[k].c1[0]}/${K[k].c1[1]}`, null], ["Category 2 done", k => `${K[k].c2[0]}/${K[k].c2[1]}`, k => K[k].c2[0] - b.c2[0], 0, true, ""],
-    ["Category 3 brought forward", k => `${K[k].c3[0]}/${K[k].c3[1]}`, k => K[k].c3[0] - b.c3[0], 0, true, ""],
-    ["Open-room utilisation", k => fmt(K[k].util, 1) + "%", null], ["Terminal cleans", k => fmt(K[k].cleans), null],
-    ["Optimality gap (proven)", k => fmt(K[k].gap, 2) + "%", null]];
+  const rows = [
+    ["Surgery minutes scheduled", k => fmt(K[k].minutes)],
+    ["Proven range (plan – upper bound)", k => `${fmt(K[k].minutes)} – ${fmt(DATA[k].ub)}`],
+    ["Optimality gap (proven)", k => fmt(DATA[k].gap, 2) + "%"],
+    ["Cases operated", k => fmt(K[k].cases)],
+    ["Category 1 done", k => `${K[k].c1[0]}/${K[k].c1[1]}`], ["Category 2 done", k => `${K[k].c2[0]}/${K[k].c2[1]}`],
+    ["Category 3 brought forward", k => `${K[k].c3[0]}/${K[k].c3[1]}`],
+    ["Open-room utilisation", k => fmt(K[k].util, 1) + "%"], ["Terminal cleans", k => fmt(K[k].cleans)]];
+  let effect = "";
+  if (DATA.neuro_sessions && DATA.baseline) {
+    const lo = K.neuro_sessions.minutes - DATA.baseline.ub, hi = DATA.neuro_sessions.ub - K.baseline.minutes;
+    effect = `<p class="small">Extra Neuro A sessions: the gain is proven to lie between <b>${lo > 0 ? "+" : ""}${fmt(lo)}</b> and <b>+${fmt(hi)}</b> min (worst case: this plan vs. the best possible baseline; best case: the best possible with sessions vs. this baseline plan). The two plans differ by <b>+${fmt(K.neuro_sessions.minutes - K.baseline.minutes)}</b> min${lo > 0 ? ", so the gain is real, not solver noise" : ""}.</p>`;
+  }
+  const A = window.ANALYSIS; let ana = "";
+  if (A) ana = `<section class="panel"><h2>Capacity analysis (day-level relaxation, solved exactly)</h2>
+    <p class="small muted">Upper bound on operated minutes counting only daily surgeon minutes and room minutes. If a change leaves this bound unchanged, it adds no usable capacity.</p>
+    <div class="scroll-x"><table><thead><tr><th>Change</th><th class="r">Upper bound (min)</th><th>Effect</th></tr></thead><tbody>
+    ${A.scenarios.map((x, i) => `<tr><td>${esc(x.name)}</td><td class="r num">${fmt(x.bound)}</td><td>${i === 0 ? "—" : x.bound === A.scenarios[0].bound ? '<span class="chip neutral">no capacity gain</span>' : `<span class="chip good">up to +${fmt(x.bound - A.scenarios[0].bound)} min</span>`}</td></tr>`).join("")}
+    </tbody></table></div>
+    <p class="small">Fridays have ${fmt(A.days[4].surgeon_minutes)} and ${fmt(A.days[9].surgeon_minutes)} surgeon minutes against ${fmt(A.days[4].room_minutes)} room minutes: surgeons, not rooms, limit Fridays, so staffing 8 rooms adds nothing unless surgeon sessions are added too.</p></section>`;
   const lo = DATA.ortho_leave; let leave = "";
   if (lo) { const dd = derive(lo); const C = lo.cases, M = lo.meta;
-    const risk = (lo.at_risk || []).map(lb => C.findIndex(c => c[0] === lb));
-    const kept = risk.filter(i => dd.done.has(i)), lost = risk.filter(i => !dd.done.has(i));
+    const idx = lb => C.findIndex(c => c[0] === lb);
+    const prot = (lo.protected || []).map(idx), brch = (lo.breached || []).map(idx);
+    const due = i => DATA.baseline ? esc(DATA.baseline.days[DATA.baseline.cases[i][3] - 1]) : "";
+    const row = (i, st) => `<tr><td class="mono">${C[i][0]}</td><td>${esc(M[i].procedure)}</td><td class="r num">${C[i][2]}</td><td>${due(i)}</td><td>${st}</td></tr>`;
     leave = `<section class="panel"><h2>Ortho B's leave: which urgent cases survive</h2>
-      <p class="small muted">Ortho B has ${fmt(risk.reduce((a, i) => a + C[i][2], 0))} min of category-2 work due in week 2 but no week-2 OR time. The plan fits ${kept.length} of the ${risk.length} cases into their week-1 sessions; ${lost.length} will breach their deadline and need escalation (another surgeon, an extra session, or a waiver).</p>
+      <p class="small muted">Ortho B has ${fmt([...prot, ...brch].reduce((a, i) => a + C[i][2], 0))} min of category-2 work due in week 2 and only the slack in their week-1 sessions left. A knapsack over that slack protects ${prot.length} of the ${prot.length + brch.length} patients (as many as fit), which the plan then treats as must-do in week 1. The other ${brch.length} breach their deadline and need escalation: another orthopaedic surgeon, an extra session, or a clinical waiver.</p>
       <div class="tablebox"><table><thead><tr><th>Case</th><th>Procedure</th><th class="r">Min</th><th>Was due</th><th>Outcome</th></tr></thead><tbody>
-      ${risk.sort((a, b) => C[a][2] - C[b][2]).map(i => `<tr><td class="mono">${C[i][0]}</td><td>${esc(M[i].procedure)}</td><td class="r num">${C[i][2]}</td><td>${esc(DATA.baseline ? DATA.baseline.days[DATA.baseline.cases[i][3] - 1] : "")}</td><td>${dd.done.has(i) ? `<span class="chip good">done ${esc(lo.days[dd.done.get(i)])}</span>` : '<span class="chip crit">breaches deadline</span>'}</td></tr>`).join("")}
-      </tbody></table></div>
-      <p class="small muted">The model maximises operated minutes, so among the at-risk cases it keeps the combination that fills Ortho B's sessions best, not necessarily the most clinically pressing. A clinical lead should review this list.</p></section>`; }
-  return `<div style="display:grid;gap:18px"><section class="panel"><h2>Scenario comparison</h2><p class="small muted">Same 300 patients in every scenario; only capacity changes. Changes are against the baseline.</p>
+      ${prot.map(i => row(i, dd.done.has(i) ? `<span class="chip good">protected · done ${esc(lo.days[dd.done.get(i)])}</span>` : '<span class="chip crit">protected but not scheduled</span>')).join("")}
+      ${brch.map(i => row(i, dd.done.has(i) ? `<span class="chip warn">breached · still done ${esc(lo.days[dd.done.get(i)])}</span>` : '<span class="chip crit">breaches deadline</span>')).join("")}
+      </tbody></table></div></section>`; }
+  return `<div style="display:grid;gap:18px"><section class="panel"><h2>Scenario comparison</h2><p class="small muted">Same 300 patients in every scenario; only capacity changes. Each plan comes with a proven upper bound, so differences only count when they exceed the gaps.</p>
     <div class="scroll-x"><table><thead><tr><th>Measure</th>${keys.map(k => `<th class="r">${SCEN[k][0]}</th>`).join("")}</tr></thead><tbody>
-    ${rows.map(([lbl, v, dlt, dg, up, u]) => `<tr><td>${lbl}</td>${keys.map(k => { let s = v(k); if (dlt && k !== "baseline") { const x = dlt(k); if (Math.abs(x) > 1e-9) s += ` <span class="chip ${(x > 0) === up ? "good" : "crit"}">${x > 0 ? "+" : ""}${fmt(x, dg)}${u}</span>`; } return `<td class="r num">${s}</td>`; }).join("")}</tr>`).join("")}
-    </tbody></table></div>
-    ${K.friday8 ? `<p class="small">Staffing both Fridays with 8 rooms instead of 6 (4 extra room-days, 1,920 min of room time) adds <b>${fmt(K.friday8.minutes - b.minutes)} min</b> of surgery, i.e. <b>${fmt((K.friday8.minutes - b.minutes) / 1920 * 100)}%</b> of the extra room time is usable. ${(K.friday8.minutes - b.minutes) < 960 ? "Surgeons' Friday calendars, not rooms, are the binding constraint." : ""}</p>` : ""}</section>${leave}</div>`;
+    ${rows.map(([lbl, v]) => `<tr><td>${lbl}</td>${keys.map(k => `<td class="r num">${v(k)}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div>${effect}</section>${ana}${leave}</div>`;
 }
 
 function viewProblem(r) {
@@ -322,14 +336,16 @@ function viewProblem(r) {
     <div><span class="eyebrow">Infection control</span><b>${C.filter(c => c[4]).length} infectious cases</b><span class="small muted">MRSA, VRE, C. diff · ${r.cleaning}-min terminal clean on every switch</span></div></div>
     <p>Decide which cases are operated, on which day, in which room and at what time, to maximise operated minutes, subject to: every category 1 and 2 case before its deadline, surgeons within their daily OR time and never in two rooms at once, rooms within their 8-hour day, and a terminal clean whenever a room changes infection status. Demand (${fmt(dem)} min) is close to surgeon supply (${fmt(sc)} min) but calendars, deadlines and the no-two-places rule make most of it impossible to use, so choosing <i>which</i> cases to operate matters.</p>
     <p class="muted small">Scale versus the paper's largest test: 300 vs 120 cases, 10 vs 5 days, 14 vs 8 surgeons, 3 infection types vs 1, per-surgeon day calendars instead of uniform limits.</p></section>
-    <div class="grid2"><section class="panel"><h2>Solver run</h2><div class="scroll-x"><table><tbody>
-      <tr><td>Room-day schedules generated</td><td class="r num">${fmt(r.columns)}</td></tr><tr><td>Cover cuts</td><td class="r num">${fmt(r.cuts)}</td></tr>
-      <tr><td>Branch-and-bound nodes</td><td class="r num">${fmt(r.nodes)}</td></tr><tr><td>Plan before polishing</td><td class="r num">${fmt(r.lb_no_polish)} min</td></tr>
-      <tr><td>Plan after CP-SAT polishing</td><td class="r num">${fmt(r.lb)} min</td></tr><tr><td>Proven upper bound</td><td class="r num">${fmt(r.ub)} min</td></tr>
-      <tr><td>Optimality gap</td><td class="r num">${fmt(r.gap, 2)}%</td></tr><tr><td>Greedy heuristic</td><td class="r num">${fmt(r.heuristic)} min${(r.heuristic_errors || []).length ? ' <span class="chip crit">infeasible: misses a mandatory case</span>' : ""}</td></tr>
-      <tr><td>Solve time</td><td class="r num">${fmt(r.time / 60, 1)} min</td></tr><tr><td>Independent validator</td><td class="r">${(r.errors || []).length ? `<span class="chip crit">${r.errors.length} violations</span>` : '<span class="chip good">all constraints satisfied</span>'}</td></tr>
-    </tbody></table></div></section>
-    <section class="panel"><h2>Plan and bound over time</h2><div class="legend"><span><i style="background:var(--s3)"></i>Best plan</span><span><i style="background:var(--s2)"></i>Proven bound</span></div>${ch}</section></div></div>`;
+    <section class="panel"><h2>How this plan was computed</h2><div class="scroll-x"><table><tbody>
+      <tr><td>Upper bound</td><td>Day-level relaxation (cases to days under surgeon-day and room-day minutes), solved by HiGHS: <b class="num">${fmt(r.ub)} min</b>${r.ub_proved ? ' <span class="chip good">proven optimal</span>' : ""}</td></tr>
+      <tr><td>Plan</td><td>Cases assigned to days from that relaxation, then each day packed exactly into its rooms by CP-SAT (sequencing, 45-min cleans, surgeon no-overlap and minutes); cases that don't fit roll to a later day within their deadline: <b class="num">${fmt(r.lb)} min</b></td></tr>
+      <tr><td>Optimality gap</td><td class="num">${fmt(r.gap, 2)}%</td></tr>
+      <tr><td>Greedy heuristic (paper §6.1, best of 200 random starts)</td><td class="num">${r.heuristic ? fmt(r.heuristic) + " min" : "no valid plan"}</td></tr>
+      <tr><td>Independent validator</td><td>${(r.errors || []).length ? `<span class="chip crit">${r.errors.length} violations</span>` : '<span class="chip good">all constraints satisfied</span>'}</td></tr>
+      <tr><td>Solve time</td><td class="num">${fmt(r.time / 60, 1)} min</td></tr>
+    </tbody></table></div>
+    <p class="small muted">The paper's branch-and-price-and-cut, run at this scale (300 cases, 10 days, 14 surgeons; 2.5× its largest test) on a 30-minute budget, did not converge and found no valid baseline plan. These plans come from two extensions built on its components, a day-level bound and day-by-day CP-SAT packing, kept separate from the paper-faithful results.</p></section>
+</div>`;
 }
 
 function render() {
@@ -355,6 +371,6 @@ function render() {
   const ds = $("#c-day"); if (ds) ds.onclick = e => { const b = e.target.closest("button"); if (!b) return; state.day = +b.dataset.v; render(); };
 }
 addEventListener("hashchange", render);
-fetch("riverside.json").then(x => x.json()).then(arr => { for (const r of arr) DATA[r.variant] = r; render(); })
+Promise.all([fetch("riverside.json").then(x => x.json()), fetch("analysis.json").then(x => x.json()).catch(() => null)]).then(([arr, an]) => { window.ANALYSIS = an; for (const r of arr) DATA[r.variant] = r; render(); })
   .catch(err => { $("#view").innerHTML = `<div class="empty">The plans could not be loaded (${esc(err.message)}). Reload the page to try again.</div>`; });
 </script>
