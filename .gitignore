@@ -17,3 +17,4 @@ scenarios/out/*.pkl
 scenarios/out/*.log
 scenarios/out_run1/
 scenarios/*.err
+scenarios/fast_*.txt
