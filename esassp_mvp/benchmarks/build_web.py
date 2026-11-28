@@ -3,7 +3,7 @@ import glob, json, sys
 from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 recs = []
-for f in sorted(glob.glob(str(root / "benchmarks" / "results_part*.jsonl"))):
+for f in sorted(glob.glob(str(root / "benchmarks" / "results_*part*.jsonl"))):
     recs += [json.loads(l) for l in open(f) if l.strip()]
 order = [json.loads(json.dumps(r)) for r in recs]
 order.sort(key=lambda r: (r["key"]))

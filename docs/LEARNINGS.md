@@ -118,10 +118,16 @@ ward LOS l^w. Models: **SP** (SAA), **DRO-M** (mean-support ambiguity), **DRO-W*
 
 ### Workflow decisions for MVP #2 (user instructions)
 * Each paper = an **independent project folder** (`esassp_mvp/`), same recipe as MVP #1 but nothing shared in code.
-* **Write many tests** (user asked explicitly): 401 tests — hand-computed cases, MILP-vs-enumeration, strong duality against primal LPs,
+* **Write many tests** (user asked explicitly): 418 tests — hand-computed cases, MILP-vs-enumeration, strong duality against primal LPs,
   parametrised random instances, toggles, experiment JSON, headless Streamlit (`streamlit.testing.v1.AppTest`).
 * Long benchmarks: run in the background with a JSONL checkpoint per instance (`benchmarks/run_experiments.py`), 2 workers.
 * Details: `esassp_mvp/docs/NOTES.md`.
 * **Property tests find generator bugs**: with few ORs and many types, a type could end up with *no block* (its surgeries
   never schedulable). Fixed by letting leftover types share the least-loaded block. Always assert "every entity is
   feasible somewhere" on generated data.
+
+### Supplementary material (lesson, MVP #2)
+* **Ask for the supplement early.** The PDF's "Appendix A. Supplementary data" line gives the DOI that hosts it (ScienceDirect `mmc1.pdf`). It held the
+  real data tables, the algorithm for the third model, the CPU-time table to benchmark against and sensitivity studies. Deriving the missing algorithm
+  independently and verifying it against a primal oracle was still worthwhile: the supplement later confirmed it (Algorithm 2) and the dual (C.4).
+* After reading the supplement: re-check *every* "assumption" in the README/notes and upgrade it to "confirmed by Appendix X" or "differs because …".

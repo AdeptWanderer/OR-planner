@@ -52,3 +52,24 @@ Blocks are closed (one type per block); K_b = min(max_positions, I_c, ⌊L / lo_
 ## 9. Computational observations (HiGHS)
 SP extensive form (N=50, I=40) solves in < 1 min. DRO-M C&CG: I=24 converged in ≈ 4 min (49 iterations, master 5–9 s each); DRO-W needs ~3× more
 recourse copies (many (n,r) cuts) and stalls around 1 % gap in 5 min. Master solve time, not separation, dominates (separation < 0.3 s).
+
+## 10. What the paper's online supplement (mmc1.pdf, 44 pp.) confirmed or changed
+Read after the first version was built; the DOI of the article carries the supplement (page 305 of the PDF).
+* **Algorithm 2 (Appendix D) = the DRO-W algorithm derived here**: master (D.3) with scalar ν, φ and ψ = ν·x, φ·x; per-sample
+  (n) sub-problems (C.26) / (C.37); UB = master − mean(δ) + mean(sub-problem values); scenarios added for *every* n. Differences in detail: the paper starts with
+  an empty scenario set (we start from the nominal scenario), adds all N scenarios per iteration (we add the most violated N/3, de-duplicated), and uses
+  crude bounds for ν̄, φ̄ (D.4); ours are the Lipschitz constants 2c^o + c^g + c^w K and c^icu + c^ward (tighter, tested not to cut optima).
+* **Dual of Q^BC (C.4) is identical to the one derived here** (including the printed `∀k ∈ [K_b]` typo-free form) and Prop. 11's three-way choice
+  `d_i ∈ {lo, d^n, hi}` with the penalty weighted by x (C.28) matches the enumeration used in `subproblems.py`.
+* **Horizon convention (Remark 3)**: ICU/ward needs beyond T are *not* part of the objective — same as the convention chosen here.
+* **"(10,7) beds" = (beds on weekdays, beds on weekend)** (Appendix J.1: "(20,20), (15,15), …, (5,5)"), for ICU and ward alike. Confirmed.
+* **Real data** (Appendix G): Table G.1 (5 cardiac types), G.5 (Min & Yih, 9 specialties + shares), G.7 (R-I, 10 types) and the block schedules
+  G.2 / G.4 / G.6 are now in `generator.py` (`paper_instance("Case"|"R"|"M", I)`). The 16,613-case hospital data itself stays private; the tables give
+  mean/sd only, so durations/LOS are still **gamma-distributed with those moments, clipped at the 20/80 % quantiles** (the paper uses empirical quantiles).
+  Case-I: I/5 surgeries per type, one OR per type Mon–Fri. R-I: I/10 per type. M-I: type shares of G.5.
+* **Cost structures 3 and 4** appear in Tables G.1/I.1 but are defined in the main text only partially; we implement Costs 1 and 2.
+* **Paper CPU times (Table I.1, CPLEX 12.6, 16 cores)**: R-70, (10,7) beds, Cost 1: SP 2932 s, DRO-M 610 s, DRO-W 1622 s; (5,2): 1218 / 264 / 1100 s.
+  R-100: 1999 / 1526 / 1750 s. Symmetry breaking cut R-70 times from 1120 → 610 s (Cost 1); valid inequalities cut DRO-M from 21 → 10 iterations.
+* **Appendix F**: Benders decomposition of the SP is *worse* than the direct MILP (gaps 11–23 % after 2 h) — consistent with solving SP as one MILP here.
+* **Sensitivity (App. J, R-130)**: SP schedules more surgeries than DRO-M, the gap widening as beds shrink (e.g. (5,5): 83 vs 68); raising c^icu = c^ward from
+  100 to 1200 cuts DRO-M volume 127 → 60. Qualitatively reproducible with `paper_instance` and the app sliders.

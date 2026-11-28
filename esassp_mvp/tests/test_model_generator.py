@@ -3,7 +3,7 @@ import pytest
 from conftest import hand_instance, sol_from, tiny
 
 from esassp import generate_instance, paper_instance
-from esassp.generator import BED_PRESETS, CARDIAC, GENERAL, LIBRARIES, type_summary, _gamma_q
+from esassp.generator import BED_PRESETS, CARDIAC, GENERAL, LIBRARIES, PAPER_R, type_summary, _gamma_q
 from esassp.model import Block, Costs, Solution, mean_allocation
 
 
@@ -86,7 +86,7 @@ def test_paper_instances_shapes():
     r = paper_instance("R", 28)
     c = paper_instance("Case", 24, beds="(5,2)", cost=2)
     assert r.name == "R-28" and r.I == 28 and c.costs.c_o == 100.0
-    assert {t.name for t in r.types} == {t.name for t in GENERAL}
+    assert {t.name for t in r.types} == {t.name for t in PAPER_R}
 
 
 def test_gamma_quantile_helpers():
@@ -103,7 +103,7 @@ def test_type_library_provenance_labels():
     assert (ent.d_mean, ent.d_sd) == (74, 37)
     oph = next(t for t in GENERAL if t.name == "OPHTH")
     assert (oph.d_mean, oph.d_sd) == (38, 19)
-    assert set(LIBRARIES) == {"cardiac", "general"}
+    assert set(LIBRARIES) == {"cardiac", "general", "paper-case", "paper-R", "paper-M"}
 
 
 def test_instance_helpers():

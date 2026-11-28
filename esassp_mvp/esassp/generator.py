@@ -32,7 +32,50 @@ GENERAL = [  # Mannino et al.-style specialties; only ENT / OPHTH durations and 
     SurgeryType("ORTHO", 120, 45, 0.4, 0.6, 3.2, 1.6),
     SurgeryType("GENSURG", 110, 50, 0.6, 0.8, 2.8, 1.5),
 ]
-LIBRARIES: Dict[str, List[SurgeryType]] = {"cardiac": CARDIAC, "general": GENERAL}
+# ---- the paper's REAL instance data (supplement Appendix G) -------------------------------------------------
+# Table G.1 (collaborating hospital, 16,613 cases 2010-2018): Case-I instances, I/5 surgeries of each type
+PAPER_CASE = [
+    SurgeryType("CABG+AVR", 286, 87, 4, 6.5, 7, 5.9, "paper Table G.1"),
+    SurgeryType("IsoAVR", 207, 125, 3, 3.2, 6, 4.5, "paper Table G.1"),
+    SurgeryType("IsoCABG", 247, 81, 3, 3.8, 5, 4.6, "paper Table G.1"),
+    SurgeryType("IsoMVR", 250, 77, 3, 2.9, 6, 5.8, "paper Table G.1"),
+    SurgeryType("TAVR", 83, 36, 2, 2.0, 4, 3.8, "paper Table G.1"),
+]
+# Table G.7 (Mannino et al. 2010; * from Min & Yih 2010): R-I instances, I/10 surgeries of each type
+PAPER_R = [
+    SurgeryType("CARD", 99, 53, 2, 2, 2, 2, "paper Table G.7"),
+    SurgeryType("GASTRO", 132, 76, 1, 1, 1, 1, "paper Table G.7"),
+    SurgeryType("GYN", 78, 52, 2, 2, 2, 2, "paper Table G.7"),
+    SurgeryType("MED", 75, 72, 0.05, 0.05, 1, 1, "paper Table G.7"),
+    SurgeryType("ORTHO", 142, 58, 1.5, 1.5, 1.5, 1.5, "paper Table G.7"),
+    SurgeryType("URO", 72, 38, 0.8, 0.8, 1, 1, "paper Table G.7"),
+    SurgeryType("ENT", 74, 37, 0.1, 0.1, 0.1, 0.1, "paper Table G.7 (Min & Yih)"),
+    SurgeryType("NEURO", 160, 77, 2, 2, 2, 2, "paper Table G.7 (Min & Yih)"),
+    SurgeryType("VASCULAR", 120, 61, 3.5, 3.5, 3.5, 3.5, "paper Table G.7 (Min & Yih)"),
+    SurgeryType("OPHTH", 38, 19, 0.05, 0.05, 0.05, 0.05, "paper Table G.7 (Min & Yih)"),
+]
+# Table G.5 (Min & Yih 2010): M-I instances (type shares in %), block schedule Table G.4
+PAPER_M = [
+    SurgeryType("ENT", 74, 37, 0.1, 0.1, 0.1, 0.1, "paper Table G.5"),
+    SurgeryType("OBGYN", 86, 40, 2, 2, 2, 2, "paper Table G.5"),
+    SurgeryType("ORTHO", 107, 44, 1.5, 1.5, 1.5, 1.5, "paper Table G.5"),
+    SurgeryType("NEURO", 160, 77, 2, 2, 2, 2, "paper Table G.5"),
+    SurgeryType("GEN", 93, 49, 0.05, 0.05, 0.05, 0.05, "paper Table G.5"),
+    SurgeryType("OPHTH", 38, 19, 0.05, 0.05, 0.05, 0.05, "paper Table G.5"),
+    SurgeryType("VASCULAR", 120, 61, 3.5, 3.5, 3.5, 3.5, "paper Table G.5"),
+    SurgeryType("CARDIAC", 240, 103, 2, 2, 3.5, 3.5, "paper Table G.5"),
+    SurgeryType("UROLOGY", 64, 52, 0.8, 0.8, 0.8, 0.8, "paper Table G.5"),
+]
+PAPER_M_SHARE = [21.34, 9.26, 23.26, 5.04, 22.12, 2.98, 8.20, 2.44, 5.36]
+# Table G.4: type per (OR room, day Mon..Fri); None = no block
+_G4 = {1: ["ENT", "ENT", "ENT", None, None], 2: [None, None, "ENT", "ENT", "ENT"], 3: ["OBGYN", None, "OBGYN", None, "OBGYN"],
+       4: ["ORTHO", "ORTHO", None, "ORTHO", "ORTHO"], 5: [None, "ORTHO", "NEURO", None, None],
+       6: ["GEN", "GEN", "GEN", "GEN", None], 7: [None, "GEN", "GEN", "GEN", "GEN"],
+       8: ["OPHTH", "OPHTH", None, "OPHTH", "OPHTH"], 9: ["VASCULAR", None, "CARDIAC", None, "VASCULAR"],
+       10: ["UROLOGY", None, "ORTHO", None, None]}
+
+LIBRARIES: Dict[str, List[SurgeryType]] = {"cardiac": CARDIAC, "general": GENERAL, "paper-case": PAPER_CASE,
+                                           "paper-R": PAPER_R, "paper-M": PAPER_M}
 
 BED_PRESETS = {"(10,7)": ((10, 7), (10, 7)), "(5,2)": ((5, 2), (5, 2))}   # (icu(week, weekend), ward(week, weekend))
 
@@ -135,10 +178,49 @@ def generate_instance(n_surgeries: int = 24, library: str = "cardiac", seed: int
     return inst
 
 
-def paper_instance(kind: str, n: int, beds: str = "(10,7)", cost: int = 1, seed: int = 1) -> Instance:
-    """Instances shaped like the paper's R-n (6 general specialties, 10 ORs) and Case-n (cardiac, 5 ORs).
-    Our sizes are far smaller because HiGHS replaces CPLEX; the *recipe* is the paper's."""
-    c = Costs(c_o=26.0, c_icu=1000, c_ward=1000) if cost == 1 else Costs(c_o=100.0, c_icu=1000, c_ward=1000)
-    if kind.lower().startswith("r"):
-        return generate_instance(n, "general", seed, n_ors=max(1, round(n / 14)), beds=beds, costs=c, name=f"R-{n}")
-    return generate_instance(n, "cardiac", seed, n_ors=max(1, round(n / 12)), beds=beds, costs=c, name=f"Case-{n}")
+def paper_instance(kind: str, n: int, beds: str = "(10,7)", cost: int = 1, seed: int = 1,
+                   block_minutes: float = 480.0, max_positions: int = 6) -> Instance:
+    """Instances built from the paper's REAL supplement data (Appendix G).
+
+    kind "Case": 5 cardiac types (Table G.1), I/5 surgeries each, one OR per type Mon-Fri (Table G.2) -> 25 blocks.
+    kind "R"   : 10 specialties (Table G.7), I/10 each, one OR per type Mon-Fri (Table G.6) -> 50 blocks.
+    kind "M"   : 9 specialties (Table G.5) with the paper's shares, block schedule of Table G.4 -> 33 blocks.
+    Sizes the paper used (I = 70-130) are far beyond HiGHS in reasonable time; smaller I keeps the same structure.
+    """
+    kind = kind.upper()
+    c = Costs(c_o=26.0 if cost == 1 else 100.0)
+    key = {"CASE": "paper-case", "R": "paper-R", "M": "paper-M"}[kind]
+    types = LIBRARIES[key]
+    nt = len(types)
+    summ = [type_summary(t, np.random.default_rng(1000 + j)) for j, t in enumerate(types)]
+    if kind == "M":
+        w = np.asarray(PAPER_M_SHARE, float); w = w / w.sum()
+        raw = w * n; cnt = np.floor(raw).astype(int)
+        for j in np.argsort(-(raw - cnt))[: n - cnt.sum()]:
+            cnt[j] += 1
+    else:
+        cnt = np.full(nt, n // nt); cnt[: n - cnt.sum()] += 1
+    surgeries: List[Surgery] = []
+    for j in range(nt):
+        for r in range(int(cnt[j])):
+            surgeries.append(Surgery(len(surgeries), j, f"{types[j].name}-{r + 1:02d}", 1.0, **summ[j]))
+    cells: List[tuple] = []                        # (day, room, type)
+    if kind == "M":
+        names = [t.name for t in types]
+        for room, row in _G4.items():
+            for day, nm in enumerate(row):
+                if nm is not None:
+                    cells.append((day, room - 1, names.index(nm)))
+    else:
+        for j in range(nt):
+            for day in range(5):
+                cells.append((day, j, j))
+    cells.sort(key=lambda x: (x[0], x[1]))
+    blocks: List[Block] = []
+    for day, room, j in cells:
+        K = int(max(1, min(max_positions, cnt[j], math.floor(block_minutes / max(summ[j]["lo_d"], 1.0)))))
+        blocks.append(Block(len(blocks), day, room, block_minutes, K, (j,)))
+    (iw, ie), (ww, we) = BED_PRESETS[beds]
+    return Instance(types=list(types), surgeries=surgeries, blocks=blocks, T=7, icu_beds=_beds(7, iw, ie), ward_beds=_beds(7, ww, we),
+                    costs=c, name=f"{kind.capitalize() if kind != 'R' and kind != 'M' else kind}-{n}", seed=seed,
+                    notes="type statistics and block schedule from the paper's supplement (Appendix G)")

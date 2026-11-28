@@ -1,9 +1,9 @@
-"""Markdown tables from benchmarks/results_part*.jsonl (used in the README)."""
+"""Markdown tables from benchmarks/results_*part*.jsonl (used in the README)."""
 import glob, json
 from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 recs = []
-for f in sorted(glob.glob(str(root / "benchmarks" / "results_part*.jsonl"))):
+for f in sorted(glob.glob(str(root / "benchmarks" / "results_*part*.jsonl"))):
     recs += [json.loads(l) for l in open(f) if l.strip()]
 recs.sort(key=lambda r: r["key"])
 print("| Instance | Model | Scheduled | Solve s | Gap % | Mean cost Δ=0 | Mean cost Δ=0.5 | max ICU PE (Δ=0.2) | RelTC vs SP (Δ=0) |")

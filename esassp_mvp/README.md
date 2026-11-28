@@ -23,7 +23,7 @@ plus the paper's **non-integrated baselines** (ignore the downstream units / ign
 cd esassp_mvp
 pip install -r requirements.txt
 streamlit run app.py              # dashboard at http://localhost:8501
-python -m pytest -q tests         # 401 tests, ~1 min
+python -m pytest -q tests         # 418 tests, ~1 min
 ```
 
 Open `web/index.html` in a browser for the static dashboard built from the precomputed benchmark runs.
@@ -71,7 +71,7 @@ esassp/
   experiment.py   one-instance experiment (models x baselines x mis-specification) -> JSON record
   kpi.py, dataio.py, validate.py
 app.py            Streamlit dashboard          web/index.html  static dashboard
-tests/            401 tests                    benchmarks/     experiment grid, table + web builders
+tests/            418 tests                    benchmarks/     experiment grid, table + web builders
 ```
 
 ### Algorithm, as implemented
@@ -88,7 +88,7 @@ tests/            401 tests                    benchmarks/     experiment grid, 
 5. **Bounds**: LB = dual bound of the master, UB = master objective with the δ's replaced by the true separation values; stop at the target gap.
 6. **DRO-W**: one multiplier ν for the duration ball and one for the LOS ball; cuts for every (sample n, scenario r) share the recourse copy of r.
 
-## Validation (what the 401 tests check)
+## Validation (what the 418 tests check)
 
 * closed-form `Q^BC` equals the LP of (4b)–(4e) on random data; hand-computed waiting / overtime / idle / bed examples;
 * first-stage MILP solutions always pass the independent validator; recourse copies in the MILP equal the oracle for fixed (x, s);
@@ -100,13 +100,32 @@ tests/            401 tests                    benchmarks/     experiment grid, 
 * SP objective equals the oracle SAA objective; ignoring downstream capacity never helps out of sample;
 * experiment records are JSON-serialisable and consistent; the Streamlit app renders and solves headlessly.
 
-## Benchmarks (synthetic instances, HiGHS, 2 threads per run, 100 s per model)
+## Benchmarks (HiGHS, 2 threads per run, 100 s per model)
 
-`python benchmarks/run_experiments.py <part> <n_parts> <out.jsonl>` then `python benchmarks/build_web.py`. Out-of-sample: 5 000 simulated weeks.
+`python benchmarks/run_experiments.py <part> <n_parts> <out.jsonl>` (synthetic types) and `benchmarks/run_paper_data.py` (paper data), then `python benchmarks/build_artifact.py`. Out-of-sample: 5 000 simulated weeks.
 Instances follow the paper's recipe but are **synthetic and much smaller** than R-70 / Case-100 (the paper used CPLEX on 16 cores).
 
+<!--TABLES-->
 | Instance | Model | Scheduled | Solve s | Gap % | Mean cost Δ=0 | Mean cost Δ=0.5 | max ICU PE (Δ=0.2) | RelTC vs SP (Δ=0) |
 |---|---|---|---|---|---|---|---|---|
+| Case-15-b52-c1 (I=15) | SP | 12 | 5 | 0.20 | 171,517 | 177,649 | 0.90 |  |
+| Case-15-b52-c1 (I=15) | DRO-M | 12 | 100 | 3.53 | 172,499 | 177,323 | 0.97 | -0.01 |
+| Case-15-b52-c1 (I=15) | DRO-W | 15 | 101 | 5.18 | 173,720 | 183,434 | 0.98 | -0.01 |
+| Case-20-b52-c1 (I=20) | SP | 16 | 5 | 0.20 | 167,560 | 178,520 | 0.98 |  |
+| Case-20-b52-c1 (I=20) | DRO-M | 14 | 100 | 9.95 | 166,903 | 174,021 | 0.98 | 0.00 |
+| Case-20-b52-c1 (I=20) | DRO-W | 16 | 101 | 9.55 | 169,472 | 181,043 | 0.99 | -0.01 |
+| Case-25-b107-c1 (I=25) | SP | 22 | 6 | 0.19 | 133,206 | 141,387 | 0.64 |  |
+| Case-25-b107-c1 (I=25) | DRO-M | 22 | 100 | 25.00 | 133,192 | 141,371 | 0.64 | 0.00 |
+| Case-25-b107-c1 (I=25) | DRO-W | 25 | 101 | 70.54 | 139,706 | 154,798 | 0.89 | -0.05 |
+| M-24-b52-c1 (I=24) | SP | 24 | 3 | 0.01 | 228,039 | 230,325 | 0.20 |  |
+| M-24-b52-c1 (I=24) | DRO-M | 24 | 100 | 5.05 | 228,188 | 229,810 | 0.05 | -0.00 |
+| M-24-b52-c1 (I=24) | DRO-W | 24 | 100 | 5.96 | 228,177 | 230,393 | 0.20 | -0.00 |
+| R-20-b52-c1 (I=20) | SP | 20 | 2 | 0.05 | 385,211 | 388,900 | 0.22 |  |
+| R-20-b52-c1 (I=20) | DRO-M | 20 | 100 | 3.83 | 385,761 | 388,600 | 0.44 | -0.00 |
+| R-20-b52-c1 (I=20) | DRO-W | 20 | 101 | 3.77 | 385,709 | 389,852 | 0.41 | -0.00 |
+| R-30-b107-c1 (I=30) | SP | 30 | 0 | 0.00 | 368,230 | 368,526 | 0.03 |  |
+| R-30-b107-c1 (I=30) | DRO-M | 30 | 100 | 3.79 | 367,988 | 367,999 | 0.00 | 0.00 |
+| R-30-b107-c1 (I=30) | DRO-W | 30 | 100 | 13.90 | 369,244 | 372,317 | 0.09 | -0.00 |
 | cardiac-12-b52-c1 (I=12) | SP | 7 | 0 | 0.00 | 28,436 | 31,112 | 0.24 |  |
 | cardiac-12-b52-c1 (I=12) | DRO-M | 5 | 1 | 0.04 | 28,404 | 29,725 | 0.00 | 0.00 |
 | cardiac-12-b52-c1 (I=12) | DRO-W | 5 | 3 | 0.02 | 28,076 | 29,383 | 0.00 | 0.01 |
@@ -134,6 +153,30 @@ Instances follow the paper's recipe but are **synthetic and much smaller** than 
 
 | Instance | Variant | Scheduled | mean cost Δ=0 | RelTC w/o vs integrated (Δ=0) |
 |---|---|---|---|---|
+| Case-15-b52-c1 | SP w/o downstream | 15 | 176,777 | 0.03 |
+| Case-15-b52-c1 | SP w/o scheduling | 12 | 172,525 | 0.01 |
+| Case-15-b52-c1 | DRO-M w/o downstream | 15 | 176,564 | 0.02 |
+| Case-15-b52-c1 | DRO-M w/o scheduling | 12 | 171,962 | -0.00 |
+| Case-20-b52-c1 | SP w/o downstream | 20 | 175,259 | 0.05 |
+| Case-20-b52-c1 | SP w/o scheduling | 16 | 167,549 | -0.00 |
+| Case-20-b52-c1 | DRO-M w/o downstream | 20 | 175,699 | 0.05 |
+| Case-20-b52-c1 | DRO-M w/o scheduling | 15 | 166,875 | -0.00 |
+| Case-25-b107-c1 | SP w/o downstream | 25 | 137,279 | 0.03 |
+| Case-25-b107-c1 | SP w/o scheduling | 22 | 134,440 | 0.01 |
+| Case-25-b107-c1 | DRO-M w/o downstream | 25 | 134,072 | 0.01 |
+| Case-25-b107-c1 | DRO-M w/o scheduling | 22 | 133,364 | 0.00 |
+| M-24-b52-c1 | SP w/o downstream | 24 | 229,940 | 0.01 |
+| M-24-b52-c1 | SP w/o scheduling | 24 | 229,876 | 0.01 |
+| M-24-b52-c1 | DRO-M w/o downstream | 24 | 228,830 | 0.00 |
+| M-24-b52-c1 | DRO-M w/o scheduling | 24 | 230,798 | 0.01 |
+| R-20-b52-c1 | SP w/o downstream | 20 | 390,935 | 0.01 |
+| R-20-b52-c1 | SP w/o scheduling | 20 | 387,313 | 0.01 |
+| R-20-b52-c1 | DRO-M w/o downstream | 20 | 388,774 | 0.01 |
+| R-20-b52-c1 | DRO-M w/o scheduling | 20 | 386,453 | 0.00 |
+| R-30-b107-c1 | SP w/o downstream | 30 | 368,310 | 0.00 |
+| R-30-b107-c1 | SP w/o scheduling | 30 | 372,620 | 0.01 |
+| R-30-b107-c1 | DRO-M w/o downstream | 30 | 368,172 | 0.00 |
+| R-30-b107-c1 | DRO-M w/o scheduling | 30 | 370,980 | 0.01 |
 | cardiac-12-b52-c1 | SP w/o downstream | 11 | 32,874 | 0.16 |
 | cardiac-12-b52-c1 | SP w/o scheduling | 8 | 29,497 | 0.04 |
 | cardiac-12-b52-c1 | DRO-M w/o downstream | 11 | 34,020 | 0.20 |
@@ -169,33 +212,45 @@ Instances follow the paper's recipe but are **synthetic and much smaller** than 
 
 **How to read this (measured, not the paper's numbers)**
 
-* **Integration matters** — ignoring the ICU/ward capacity ("w/o downstream") schedules far more surgeries and costs **+13 % to +36 %** more out of
-  sample on the tight-bed cardiac instances (paper: 24–60 % on much larger instances); it is harmless when beds are ample (`general-*`).
-* **Robustness shows under distribution shift**, not in-sample: at Δ = 0 SP, DRO-M and DRO-W cost about the same (within about 5 %), but at Δ = 0.5
-  DRO-M plans are cheaper than SP on 6 of 8 instances (e.g. cardiac-24: 55.3 k vs 58.5 k; DRO-W 57.9 k) and have lower or equal worst-day ICU exceedance
-  (cardiac-12: 0.00 vs 0.24 at Δ = 0.2). They schedule the same or fewer surgeries, as in the paper.
-* **"w/o scheduling"** (start times = cumulative mean durations) is only mildly worse here (0–14 %); the paper's large waiting-time effect needs bigger blocks.
-* **Solver performance (HiGHS, 100 s, 2 threads)**: SP solves to < 0.2 % gap in seconds; DRO-W reaches ≤ 3 % on every instance; **DRO-M did not close the
-  gap within 100 s for I ≥ 20 (3.6–28 %)**, the opposite of the paper's finding that DRO-M is the fastest DRO model (CPLEX, 16 cores, hours). The master
-  MILP dominates run time (separation < 0.3 s); the DRO-M gap is an upper-bound-side effect of the time limit (the returned plans are feasible and evaluated out of sample).
-* Differences between plans at Δ = 0 are small relative to Monte-Carlo noise on these small instances; do not over-interpret single rows.
+*Synthetic-type instances (`cardiac-*`, `general-*`, 1–2 ORs, blocks well filled)*
+* **Integration matters** — ignoring the ICU/ward capacity ("w/o downstream") schedules far more surgeries and costs **+13 % to +36 %** out of sample on the
+  tight-bed cardiac instances (paper: 24–60 % at I = 70+); harmless when beds are ample.
+* **Robustness shows under distribution shift**: at Δ = 0 SP, DRO-M and DRO-W cost about the same (within about 5 %); at Δ = 0.5 DRO-M plans are cheaper than SP on 6 of 8
+  instances (e.g. cardiac-24: 55.3 k vs 58.5 k) with lower or equal worst-day ICU exceedance (cardiac-12: 0.00 vs 0.24 at Δ = 0.2).
+* DRO plans schedule the same or fewer surgeries than SP, as in the paper.
 
+*Instances on the paper's real data and full block schedule (`Case-*`, `R-*`, `M-*`, 25–50 blocks)*
+* With I = 15–30 these 25–50 blocks are **mostly empty**: idle-time cost (c^g · L per unused block) is 170 k–385 k per week and swamps everything else, so all
+  models and baselines are within ≈ 5 % of each other (ignoring downstream: +1 % to +5 %; the paper's large effects appear at I = 70–130 where blocks are full).
+  These runs mainly validate the data pipeline and show where HiGHS stands; use `Case-25` / `M-24` to look at exceedance probabilities rather than cost.
+* The largest ICU-exceedance gaps are on `M-24` (SP 0.20 vs DRO-M 0.05 at Δ = 0.2).
+
+*Solver performance (HiGHS, 100 s, 2 threads each)*
+* SP solves to ≤ 0.2 % gap in seconds. **DRO-M and DRO-W did not close their gaps in 100 s for I ≥ 20** (3–28 % on the synthetic set; 4–25 % (DRO-M) and 4–71 % (DRO-W)
+  on the paper-data set). The paper (CPLEX, 16 cores, hours) finds DRO-M fastest (Table I.1: R-70 (10,7) Cost 1: SP 2932 s, DRO-M 610 s, DRO-W 1622 s); with HiGHS the master MILP
+  dominates run time (separation < 0.3 s) and DRO-W's many (n, r) cuts make it the slowest on the large-block instances.
+* Differences between plans at Δ = 0 are small relative to Monte-Carlo noise on these small instances; do not over-interpret single rows.
+<!--/TABLES-->
 
 ## Differences from the paper (deliberate or forced)
 
-* **Data**: hospital data and supplement Appendices B–J are not available. Types are a synthetic reconstruction; only ENT/OPHTH durations and
-  VASCULAR LOS appear in the text. Never read these results as the paper's numbers.
-* **Solver**: HiGHS instead of CPLEX ⇒ interactive sizes I ≈ 10–30 (paper: 50–100). Gaps are reported as measured.
-* **DRO-W C&CG** is my own derivation from (20)–(22) (Appendix D is missing) and is verified against the primal transport LP.
-* **Separation by enumeration** for blocks ≤ 11 surgeries (exact); the paper solves MILP (10)/(16) for everything. Our dual MILP is equivalent and tested.
-* **Downstream sub-problem** uses a simpler exact linearisation (`p ≤ e_t, p ≤ occupancy`), not (16c)–(16e).
-* **Stays beyond day T are not costed** (paper mixes [T] and [T+2]).
+The paper's online supplement (Appendices A–J) was read after the first implementation; see `docs/NOTES.md` §10.
+
+* **Data**: the 16,613-case hospital data is private. The supplement gives the **type statistics and block schedules** (Tables G.1–G.7), which are
+  implemented exactly in `paper_instance("Case"|"R"|"M", I)`; durations/LOS are gamma-distributed with those means and standard deviations, clipped at the 20/80 %
+  quantiles (the paper uses empirical quantiles). The `cardiac` / `general` libraries are earlier *synthetic* reconstructions and are labelled as such.
+* **Solver**: HiGHS instead of CPLEX ⇒ interactive sizes I ≈ 10–30 (paper: I = 70–130, hours on 16 cores). Gaps are reported as measured.
+* **DRO-W C&CG** was derived before the supplement was available; it **matches the paper's Algorithm 2** (Appendix D). Details differ: nominal initial scenario instead of an
+  empty set, the most violated N/3 scenarios per iteration instead of all N, and tighter bounds on the multipliers (Lipschitz constants instead of D.4).
+* **Separation by enumeration** for blocks ≤ 11 surgeries (exact); the paper solves MILPs (C.10)/(C.26)/(C.37). Our dual MILP is the paper's (C.4) and is tested equal.
+* **Downstream sub-problem** uses a simpler exact linearisation (`p ≤ e_t, p ≤ occupancy`), not (C.18d–f).
+* **Stays beyond day T are not costed** — the paper's Remark 3 states the same convention.
 * **Products ρ·x** are aggregated per (surgery, block), LOS multipliers per surgery (equivalent, smaller).
-* **Initial scenario** = nominal (mean) scenario instead of an empty scenario set.
-* **No warm start** of the master: HiGHS accepted a partial hint as an invalid incumbent (documented in `docs/NOTES.md`).
+* **No warm start** of the master: HiGHS accepted a partial hint as an invalid incumbent (see `docs/NOTES.md`).
 * **μ in the DRO-M set** is the mean of the *clipped* in-sample distribution.
 * **Symmetry breaking** assumes interchangeable surgeries: exact for DRO-M, a modelling choice for SAA-based SP / DRO-W.
-* **Ward/ICU beds "(10,7)"** is read as (weekday, weekend) beds for both units.
+* **Cost structures** 1 and 2 only (the paper also uses 3 and 4 in Table I.1).
+* **Beds "(10,7)"** = (weekday, weekend) beds for ICU and ward alike (confirmed by Appendix J.1).
 
 ## Limitations / next steps
 
