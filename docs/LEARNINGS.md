@@ -107,3 +107,10 @@ ward LOS l^w. Models: **SP** (SAA), **DRO-M** (mean-support ambiguity), **DRO-W*
   against enumeration".
 * Exact strong-duality test: with (x, s) fixed, C&CG value == moment-LP value over box vertices x integer LOS lattice to
   1e-4 absolute (34850.4195 both) — this also proves Prop. 5 bounds and inequality (26) do not cut off the optimum.
+* **Symmetry breaking vs. SAA**: constraints (27)–(29) assume identical surgeries are interchangeable. A Monte-Carlo
+  sample gives every surgery its own draw, so the *sampled* SP/DRO-W objective is not symmetric and SB moves the
+  in-sample optimum by ~0.5 % (23392 vs 23273 in our test). Exact equality only holds for DRO-M (no sample) or with
+  exchangeable scenarios (same draw for a whole class) — that is what the test uses. Treat SB as a modelling
+  choice for SP/DRO-W, not as a pure speed-up.
+* Test-writing: my own reference LP had a sign error (idle row) — a failing cross-check can be the *reference*; derive
+  the oracle independently and re-derive it when it disagrees.
