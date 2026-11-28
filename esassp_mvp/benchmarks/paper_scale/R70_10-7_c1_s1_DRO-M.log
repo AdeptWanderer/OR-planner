@@ -1,0 +1,3 @@
+19:51:45 start R70_10-7_c1_s1_DRO-M: I=70 B=50 time_limit=7000.0
+19:51:55 [M] it   1  LB    282574.07  UB    566556.81  gap 50.124%  |O|=1/1  master  10.1s sub   0.0s
+19:52:20 [M] it   2  LB    308317.84  UB    566556.81  gap 45.580%  |O|=2/2  master  25.1s sub   0.0s
