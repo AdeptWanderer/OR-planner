@@ -1,0 +1,301 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Surgery Plans and ICU Beds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow reading column, each idea = short text + one picture; two small live demos. */
+:root{
+  --bg:#f7f8fa; --surface:#ffffff; --ink:#18222d; --ink2:#566370; --line:#dde2e8;
+  --accent:#0e7c86; --accent-soft:#d9eff1;
+  --sp:#e0702b; --m:#2a6fd6; --w:#139a74; --bad:#c23a30; --good:#1f7d45; --warn:#b97a00;
+  --t1:#2a6fd6; --t2:#e0702b; --t3:#139a74; --pale:#e8edf2;
+  --font-d:"Space Grotesk","Segoe UI",system-ui,sans-serif; --font-b:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f161d; --surface:#17212b; --ink:#e7edf3; --ink2:#9fb0be; --line:#2a3946; --accent:#4fc3cc; --accent-soft:#143a3e;
+  --sp:#ff9559; --m:#6ba3ff; --w:#3fd0a6; --bad:#ff7468; --good:#5fd08a; --warn:#e9b43e; --t1:#6ba3ff; --t2:#ff9559; --t3:#3fd0a6; --pale:#223140; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161d; --surface:#17212b; --ink:#e7edf3; --ink2:#9fb0be; --line:#2a3946; --accent:#4fc3cc; --accent-soft:#143a3e;
+  --sp:#ff9559; --m:#6ba3ff; --w:#3fd0a6; --bad:#ff7468; --good:#5fd08a; --warn:#e9b43e; --t1:#6ba3ff; --t2:#ff9559; --t3:#3fd0a6; --pale:#223140; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--font-b)}
+.wrap{max-width:760px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font:700 clamp(28px,6vw,40px)/1.1 var(--font-d);margin:0 0 10px;text-wrap:balance}
+h2{font:700 22px/1.25 var(--font-d);margin:0 0 8px;text-wrap:balance}
+p{margin:0 0 12px;max-width:66ch} .lead{font-size:18px;color:var(--ink2)}
+section{margin-top:44px} .tag{font:600 12px var(--font-b);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0;min-width:0}
+.fig svg{display:block;width:100%;height:auto} .cap{font-size:13.5px;color:var(--ink2);margin:8px 2px 0}
+.hint{border-left:3px solid var(--accent);background:var(--accent-soft);padding:9px 12px;border-radius:0 8px 8px 0;margin:12px 0;font-size:15px;max-width:66ch}
+.hint b{color:var(--accent)} code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--pale);padding:1px 5px;border-radius:4px}
+svg text{fill:var(--ink2);font:12px var(--font-b)} svg .b{font-weight:600;fill:var(--ink)} svg .sm{font-size:11px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px} @media(max-width:640px){.row{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.card h3{font:700 16px var(--font-d);margin:0 0 4px}.card p{font-size:14.5px;margin:6px 0 0}
+.ctl{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;margin-bottom:8px;font-size:14px}
+.ctl label{display:flex;gap:8px;align-items:center} input[type=range]{accent-color:var(--accent);width:180px;max-width:100%}
+.seg button{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:6px 11px;cursor:pointer}
+.seg button:first-child{border-radius:8px 0 0 8px}.seg button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stats{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;margin-top:6px}.stats b{font-variant-numeric:tabular-nums}
+.pos{color:var(--bad)} .ok{color:var(--good)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600} details p{margin:8px 0 2px;font-size:15px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--ink2);font-weight:600}.scroll{overflow-x:auto}
+.theme{float:right;font:inherit;font-size:13px;background:var(--surface);color:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:4px 9px;cursor:pointer}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0}
+.steps li{counter-increment:s;position:relative;padding-left:34px;margin:0 0 10px;max-width:64ch}
+.steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font:600 13px/24px var(--font-b);text-align:center}
+</style>
+<div class="wrap">
+<button class="theme" id="theme" aria-label="Switch light or dark theme">Theme</button>
+<div class="tag">Operations research, explained</div>
+<h1>Planning surgeries when the beds behind the operating room are limited</h1>
+<p class="lead">A hospital can only operate on as many patients as its ICU and ward beds can take afterwards. And nobody knows in advance how long an operation, or the recovery, will last. This page walks through how one research paper (Shehadeh, Tsang, Padman &amp; Kilic, EJOR 2026) plans for that, and what we built and learned.</p>
+
+<section>
+<div class="tag">1 · The problem</div>
+<h2>Operating rooms feed ICU and ward beds</h2>
+<p>Each week the hospital has a list of waiting patients and a fixed grid of <em>blocks</em> (one OR on one day, assigned to a surgery type). It must decide, for every patient, <b>whether to operate this week, in which block, in what order, and at what start time</b>. After surgery the patient needs an ICU bed for some days, then a ward bed for some days.</p>
+<div class="fig">
+<svg viewBox="0 0 720 250" role="img" aria-label="Operating-room blocks on Monday to Wednesday feeding ICU and ward beds on following days">
+ <text x="8" y="14" class="b">Operating-room blocks</text>
+ <g id="g1"></g>
+ <text x="8" y="146" class="b">Beds needed afterwards</text>
+ <g id="g2"></g>
+</svg>
+<p class="cap">Colours are patients. Each patient from the top rows reappears below as an ICU stay (dark) followed by a ward stay (light). More surgeries on Monday means more beds needed Tuesday to Friday.</p>
+</div>
+<div class="hint"><b>Hint:</b> In OR terms this is <em>block scheduling</em> (assignment of cases to blocks) plus <em>sequencing and start times</em> inside each block, with <em>downstream capacity</em> as a shared constraint across days.</div>
+</section>
+
+<section>
+<div class="tag">2 · Decisions and randomness</div>
+<h2>Plan first, then reality happens</h2>
+<p>The model is <b>two-stage</b>. In stage one you commit to the plan. In stage two the random durations and stays are revealed and you pay for what went wrong.</p>
+<div class="row">
+ <div class="card"><h3>Stage 1: you decide</h3><p>Which patients, which block, in what order, scheduled start time of each surgery. Postponing a patient has a fixed cost.</p></div>
+ <div class="card"><h3>Randomness</h3><p>Surgery duration (minutes), ICU stay and ward stay (days). Real data is wide: a 4-hour operation can take 2 or 7 hours.</p></div>
+ <div class="card"><h3>Stage 2: you pay</h3><p><b>Waiting</b> of patients, <b>overtime</b>, <b>idle</b> OR time, and <b>bed excess</b> (patients with no bed available, about 1000 per bed-day).</p></div>
+</div>
+<p style="margin-top:14px">Try it: one block, four surgeries. Make every surgery run longer than planned and watch the cost types appear.</p>
+<div class="fig" id="demo1">
+ <div class="ctl">
+  <label>Surgeries run <b id="d1v">+20%</b> longer <input id="d1" type="range" min="-20" max="60" value="20" step="5"></label>
+  <span class="seg" role="group" aria-label="Start-time plan"><button id="p1" aria-pressed="true">Start times = average durations</button><button id="p2" aria-pressed="false">Extra time for early surgeries</button></span>
+ </div>
+ <svg viewBox="0 0 720 150" role="img" aria-label="Block timeline with planned and actual surgery times"><g id="tl"></g></svg>
+ <div class="stats"><span>Waiting (all patients): <b id="sw">0</b> min</span><span>Overtime: <b id="so">0</b> min</span><span>Idle: <b id="si">0</b> min</span></div>
+ <p class="cap">Pale bars: the time the plan allocates to each surgery. Solid bars: what actually happens. A surgery cannot start before the previous one ends, so delays pile up (waiting). Whatever passes the block end (dashed line) is overtime. The paper finds robust plans give early surgeries more room and the last one less.</p>
+</div>
+<div class="hint"><b>Hint:</b> the exact rule is <code>wait_k = max(0, end_(k-1) − start_k)</code>. That formula is the entire “second stage” for the operating room.</div>
+</section>
+
+<section>
+<div class="tag">3 · The beds</div>
+<h2>Recovery stays make beds the real bottleneck</h2>
+<p>Each patient occupies an ICU bed for some days, then a ward bed. Stays are random too, so the number of beds needed on a given day is random. Two measures describe the risk:</p>
+<p><b>PE</b> (probability of exceedance): chance that beds needed &gt; beds available on that day. <b>ME</b> (mean exceedance): how many beds short, on average, when it happens.</p>
+<div class="fig" id="demo2">
+ <div class="ctl"><label>ICU stays are <b id="d2v">0</b> day(s) longer than expected <input id="d2" type="range" min="0" max="3" value="0" step="1"></label></div>
+ <svg viewBox="0 0 720 210" role="img" aria-label="ICU beds needed each day compared with capacity"><g id="bd"></g></svg>
+ <div class="stats"><span>Days over capacity: <b id="bx">0</b></span><span>Bed-days short: <b id="bs">0</b></span><span>Cost at 1000 per bed-day: <b id="bc">0</b></span></div>
+ <p class="cap">Five patients operated Monday to Wednesday. Capacity is 3 ICU beds. Small increases in stay length push several days over capacity at once, because stays overlap.</p>
+</div>
+</section>
+
+<section>
+<div class="tag">4 · Handling uncertainty</div>
+<h2>Three ways to say “what might happen”</h2>
+<div class="fig">
+<svg viewBox="0 0 720 200" role="img" aria-label="Three ways to describe uncertainty: sampled scenarios, a mean and range, and balls around samples">
+ <g transform="translate(10,0)">
+  <text x="0" y="16" class="b">SP: sample scenarios</text>
+  <line x1="10" x2="210" y1="110" y2="110" stroke="var(--line)" stroke-width="2"/>
+  <g fill="var(--sp)"><circle cx="40" cy="110" r="6"/><circle cx="62" cy="110" r="6"/><circle cx="85" cy="110" r="6"/><circle cx="96" cy="95" r="6"/><circle cx="120" cy="110" r="6"/><circle cx="140" cy="110" r="6"/><circle cx="176" cy="110" r="6"/></g>
+  <text x="0" y="150">Trust a list of past cases</text><text x="0" y="168">and minimise their average cost.</text>
+ </g>
+ <g transform="translate(250,0)">
+  <text x="0" y="16" class="b">DRO-M: mean and range</text>
+  <line x1="10" x2="210" y1="110" y2="110" stroke="var(--line)" stroke-width="2"/>
+  <rect x="30" y="100" width="160" height="20" rx="6" fill="var(--m)" opacity=".25"/>
+  <line x1="95" x2="95" y1="90" y2="130" stroke="var(--m)" stroke-width="3"/>
+  <text x="30" y="88">shortest</text><text x="158" y="88">longest</text><text x="76" y="144">average</text>
+  <text x="0" y="168">Any distribution with this</text><text x="0" y="186">average and range.</text>
+ </g>
+ <g transform="translate(490,0)">
+  <text x="0" y="16" class="b">DRO-W: ball around cases</text>
+  <line x1="10" x2="210" y1="110" y2="110" stroke="var(--line)" stroke-width="2"/>
+  <g fill="var(--w)"><circle cx="50" cy="110" r="5"/><circle cx="110" cy="110" r="5"/><circle cx="170" cy="110" r="5"/></g>
+  <g fill="none" stroke="var(--w)" stroke-dasharray="3 3"><circle cx="50" cy="110" r="26"/><circle cx="110" cy="110" r="26"/><circle cx="170" cy="110" r="26"/></g>
+  <text x="0" y="168">Past cases, but real life may shift</text><text x="0" y="186">each by up to a total distance ε.</text>
+ </g>
+</svg>
+<p class="cap">DRO = <b>distributionally robust optimisation</b>: plan against the worst distribution in the set, not against one guess.</p>
+</div>
+<div class="scroll"><table>
+<tr><th></th><th>SP</th><th>DRO-M</th><th>DRO-W</th></tr>
+<tr><td>You must trust</td><td>the sample is representative</td><td>the average and range are right</td><td>the sample is roughly right (radius ε)</td></tr>
+<tr><td>Result</td><td>more surgeries, less safety margin</td><td>fewer surgeries, protects beds</td><td>in between; tunable by ε</td></tr>
+</table></div>
+<div class="hint"><b>Hint:</b> this is the classic robust-vs-stochastic trade-off. A larger ambiguity set means a more cautious plan.</div>
+</section>
+
+<section>
+<div class="tag">5 · How it is solved</div>
+<h2>A plan, a worst case, repeat</h2>
+<p>“Worst case over all distributions” sounds infinite. The paper (and our code) makes it finite with <b>column-and-constraint generation</b>, a cutting-plane method:</p>
+<div class="fig">
+<svg viewBox="0 0 720 150" role="img" aria-label="Loop between the planning problem and the worst-case finder">
+ <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--ink2)"/></marker></defs>
+ <rect x="20" y="30" width="250" height="80" rx="12" fill="var(--accent-soft)" stroke="var(--accent)"/>
+ <text x="145" y="62" text-anchor="middle" class="b">Planner (a MILP)</text><text x="145" y="82" text-anchor="middle" class="sm">best plan against the</text><text x="145" y="97" text-anchor="middle" class="sm">scenarios found so far</text>
+ <rect x="450" y="30" width="250" height="80" rx="12" fill="var(--pale)" stroke="var(--ink2)"/>
+ <text x="575" y="62" text-anchor="middle" class="b">Worst-case finder</text><text x="575" y="82" text-anchor="middle" class="sm">for this plan, which durations</text><text x="575" y="97" text-anchor="middle" class="sm">and stays hurt the most?</text>
+ <path d="M272 55 L448 55" stroke="var(--ink2)" stroke-width="2" fill="none" marker-end="url(#ar)"/><text x="360" y="46" text-anchor="middle" class="sm">plan</text>
+ <path d="M448 88 L272 88" stroke="var(--ink2)" stroke-width="2" fill="none" marker-end="url(#ar)"/><text x="360" y="108" text-anchor="middle" class="sm">new bad scenario</text>
+ <text x="360" y="140" text-anchor="middle" class="sm">stop when the plan's true worst-case cost equals the planner's own estimate</text>
+</svg>
+</div>
+<ol class="steps">
+<li><b>Plan</b> against a short list of scenarios. This gives a <em>lower bound</em> (the planner ignores scenarios it has not seen).</li>
+<li><b>Find the worst case</b> for that plan. This gives an <em>upper bound</em> (a real cost the plan can suffer).</li>
+<li>If the bounds meet, done. Otherwise <b>add the bad scenario</b> and go back to 1. It ends because only finitely many extreme scenarios exist.</li>
+</ol>
+<div class="hint"><b>Why the worst case is easy:</b> the OR cost grows in a straight-line-then-bend (convex) way with durations, so the worst durations are always at the <em>extremes</em> (each surgery either shortest or longest). We just check those combinations.</div>
+</section>
+
+<section>
+<div class="tag">6 · What we found</div>
+<h2>Same story as the paper, smaller scale</h2>
+<p>We implemented all three models and checked them against brute-force calculations (418 automated tests). Then we compared plans on thousands of simulated weeks. Surgeries scheduled by DRO plans, as a share of what SP schedules:</p>
+<div class="fig"><svg viewBox="0 0 720 210" role="img" aria-label="Share of SP surgery volume scheduled by DRO plans, paper versus our runs">
+ <g id="vol"></g></svg>
+ <p class="cap">Paper: R-70, (10,7) beds, Cost 1 (Table 1). Ours: three of our smaller instances (12 to 24 surgeries, tight beds). Same direction: robust plans operate on fewer patients.</p></div>
+<div class="row">
+ <div class="card"><h3>Ignoring beds costs money</h3><p>Plans that skip the ICU/ward constraint cost <b>13–36% more</b> in our tight-bed runs (paper: 24–60%).</p></div>
+ <div class="card"><h3>DRO is safer under surprises</h3><p>When real stays run 50% longer than assumed, DRO-M was cheaper than SP on 6 of 8 instances, with fewer bed shortages.</p></div>
+ <div class="card"><h3>Speed is solver-bound</h3><p>SP solves in seconds. DRO needs many loops; with an open-source solver (HiGHS) it often stops with a gap at our time limit.</p></div>
+</div>
+<div class="hint"><b>Honest scope:</b> our instances are far smaller than the paper’s (70 to 130 surgeries, commercial solver, 16 cores). A full-size run is in progress. Treat our numbers as direction, not replication.</div>
+</section>
+
+<section>
+<div class="tag">Reference</div>
+<h2>Cheat sheet</h2>
+<details><summary>Block, closed block scheduling</summary><p>One OR on one day. “Closed” means a block is reserved for one surgery type, as at the paper’s hospital.</p></details>
+<details><summary>Two-stage stochastic program</summary><p>Decide first, observe randomness, then pay a “recourse” cost. The objective is first-stage cost plus a statistic of the recourse cost.</p></details>
+<details><summary>Ambiguity set</summary><p>The collection of probability distributions you refuse to rule out. DRO minimises the worst expected cost over that collection.</p></details>
+<details><summary>SAA (sample average approximation)</summary><p>Replace the true expectation with an average over N sampled scenarios (N = 50 in the paper).</p></details>
+<details><summary>Wasserstein distance</summary><p>The average distance you must move probability mass to turn one distribution into another. A small radius means “close to the data”.</p></details>
+<details><summary>LOS</summary><p>Length of stay, in days, in the ICU or ward.</p></details>
+<details><summary>Column-and-constraint generation</summary><p>Add scenarios (with their own variables and constraints) one at a time, only where the current plan is weak.</p></details>
+<p style="font-size:13.5px;color:var(--ink2);margin-top:20px">Paper: Shehadeh, Tsang, Padman &amp; Kilic, <em>Operating room-to-downstream elective surgery planning under uncertainty</em>, European Journal of Operational Research 329 (2026) 288–307. Implementation, tests and notes are in the project repository.</p>
+</section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function txt(s,x,y,cls,parent,anchor){const t=el('text',{x,y,class:cls||''},parent);if(anchor)t.setAttribute('text-anchor',anchor);t.textContent=s;return t}
+const COL=['var(--t1)','var(--t2)','var(--t3)','var(--m)','var(--sp)'];
+
+/* ---- figure 1: blocks and beds ---- */
+(function(){
+  const g1=$('g1'),g2=$('g2'),days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],x0=60,dw=92;
+  const blocks=[[0,['A','A']],[0,['B']],[1,['C','C']],[2,['D']]]; // day, patients (colour by id)
+  const pats=[ // [day, colour, icuDays, wardDays, row]
+    [0,0,2,2],[0,0,1,3],[0,1,2,3],[1,2,2,2],[1,2,1,3],[2,3,2,2]];
+  days.slice(0,3).forEach((d,i)=>txt(d,x0+i*dw+dw/2,34,'sm',g1,'middle'));
+  [['OR 1',0],['OR 2',1]].forEach(([n,r])=>txt(n,6,58+r*34,'sm',g1));
+  const cell=[[0,0,0],[0,1,1],[1,0,2],[2,1,3],[1,1,2],[2,0,3]];
+  const sizes=[[0,0,[0]],[0,1,[1]],[1,0,[2,2]],[2,1,[3]]];
+  [[0,0,[0,0]],[0,1,[1]],[1,0,[2,2]],[1,1,[2]],[2,0,[3]]].forEach(([d,r,list])=>{
+    el('rect',{x:x0+d*dw+3,y:44+r*34,width:dw-6,height:28,rx:5,fill:'var(--pale)',stroke:'var(--line)'},g1);
+    list.forEach((c,k)=>el('rect',{x:x0+d*dw+7+k*(dw-12)/list.length,y:48+r*34,width:(dw-16)/list.length-2,height:20,rx:4,fill:COL[c]},g1));
+  });
+  days.forEach((d,i)=>{txt(d,x0+i*dw+dw/2,170,'sm',g2,'middle')});
+  txt('ICU',6,196,'sm',g2);txt('Ward',6,226,'sm',g2);
+  const used={};
+  pats.forEach(([d,c,icu,w],idx)=>{
+    for(let t=0;t<icu;t++){const day=d+t;used['i'+day]=(used['i'+day]||0);el('rect',{x:x0+day*dw+4+used['i'+day]*13,y:184,width:11,height:20,rx:3,fill:COL[c]},g2);used['i'+day]++}
+    for(let t=0;t<w;t++){const day=d+icu+t;if(day>6)break;used['w'+day]=(used['w'+day]||0);el('rect',{x:x0+day*dw+4+used['w'+day]*13,y:214,width:11,height:20,rx:3,fill:COL[c],opacity:.45},g2);used['w'+day]++}
+  });
+  el('line',{x1:x0,x2:x0+5*dw,y1:178,y2:178,stroke:'var(--line)'},g2);
+})();
+
+/* ---- demo 1: block timeline ---- */
+(function(){
+  const L=480,base=[100,120,90,110],plans={p1:[0,100,200,300],p2:[0,125,245,350]};
+  let plan='p1';
+  const g=$('tl');
+  function draw(){
+    const k=1+(+$('d1').value)/100;$('d1v').textContent=($('d1').value>=0?'+':'')+$('d1').value+'%';
+    g.innerHTML='';const W=640,x0=40,sx=m=>x0+W*m/ (L+120);
+    const st=plans[plan];
+    // axis
+    for(let h=0;h<=8;h++){const x=sx(h*60);el('line',{x1:x,x2:x,y1:20,y2:104,stroke:'var(--line)'},g);txt(String(8+h)+':00',x,120,'sm',g,'middle')}
+    el('line',{x1:sx(L),x2:sx(L),y1:14,y2:108,stroke:'var(--bad)','stroke-dasharray':'5 4','stroke-width':2},g);txt('block end',sx(L),10,'sm',g,'middle');
+    let end=0,wait=0,tot=0;
+    base.forEach((b,i)=>{
+      const alloc=(i<3?st[i+1]:L)-st[i];
+      el('rect',{x:sx(st[i]),y:24,width:sx(st[i]+alloc)-sx(st[i])-1,height:26,rx:4,fill:COL[i],opacity:.28},g);
+      const d=b*k, s=Math.max(st[i],end); wait+=s-st[i]; end=s+d; tot+=d;
+      el('rect',{x:sx(s),y:60,width:sx(s+d)-sx(s)-1,height:30,rx:4,fill:COL[i]},g);
+      txt('S'+(i+1),sx(s)+5,79,'b',g).style.fill='#fff';
+    });
+    txt('plan',6,42,'sm',g);txt('actual',2,80,'sm',g);
+    const over=Math.max(0,end-L),idle=Math.max(0,L-tot+over);
+    $('sw').textContent=Math.round(wait);$('so').textContent=Math.round(over);$('si').textContent=Math.round(idle);
+    $('so').className=over>0?'pos':'ok';$('sw').className=wait>0?'pos':'ok';
+  }
+  $('d1').oninput=draw;
+  ['p1','p2'].forEach(id=>$(id).onclick=()=>{plan=id;$('p1').setAttribute('aria-pressed',id==='p1');$('p2').setAttribute('aria-pressed',id==='p2');draw()});
+  draw();
+})();
+
+/* ---- demo 2: ICU beds ---- */
+(function(){
+  const pats=[[0,2,2],[0,1,3],[1,2,2],[1,2,3],[2,2,2]]; // surgery day, icu days, ward days
+  const cap=3,days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  function draw(){
+    const e=+$('d2').value;$('d2v').textContent=e;const g=$('bd');g.innerHTML='';
+    const need=Array(7).fill(0);pats.forEach(([d,i])=>{for(let t=0;t<i+e;t++)if(d+t<7)need[d+t]++});
+    const x0=50,bw=70,H=170,u=26;
+    for(let b=0;b<=6;b++){const y=H-b*u;el('line',{x1:x0,x2:x0+7*bw,y1:y,y2:y,stroke:'var(--line)'},g);txt(String(b),x0-8,y+4,'sm',g,'end')}
+    let over=0,short=0;
+    days.forEach((d,i)=>{
+      const n=need[i],bad=n>cap;if(bad){over++;short+=n-cap}
+      for(let b=0;b<n;b++)el('rect',{x:x0+i*bw+14,y:H-(b+1)*u+3,width:bw-28,height:u-5,rx:4,fill:b>=cap?'var(--bad)':'var(--m)'},g);
+      txt(d,x0+i*bw+bw/2,H+18,'sm',g,'middle');
+    });
+    el('line',{x1:x0,x2:x0+7*bw,y1:H-cap*u,y2:H-cap*u,stroke:'var(--ink)','stroke-width':2,'stroke-dasharray':'6 4'},g);txt('capacity = '+cap,x0+7*bw-4,H-cap*u-6,'b',g,'end');
+    $('bx').textContent=over;$('bs').textContent=short;$('bc').textContent=(short*1000).toLocaleString();
+    $('bx').className=over?'pos':'ok';
+  }
+  $('d2').oninput=draw;draw();
+})();
+
+/* ---- results chart: share of SP volume ---- */
+(function(){
+  const g=$('vol'),data=[['Paper R-70',54/65,57/65],['Ours: cardiac-12',5/7,5/7],['Ours: cardiac-20',10/12,11/12],['Ours: cardiac-24',10/12,12/12]];
+  const x0=50,H=150,gw=165;
+  for(let p=0;p<=100;p+=25){const y=H-p*1.3;el('line',{x1:x0,x2:x0+4*gw,y1:y,y2:y,stroke:'var(--line)'},g);txt(p+'%',x0-6,y+4,'sm',g,'end')}
+  data.forEach(([n,m,w],i)=>{
+    const x=x0+i*gw+18;
+    [[m,'var(--m)','DRO-M'],[w,'var(--w)','DRO-W']].forEach(([v,c,lab],j)=>{
+      el('rect',{x:x+j*56,y:H-v*130,width:48,height:v*130,rx:4,fill:c},g);
+      txt(Math.round(v*100)+'%',x+j*56+24,H-v*130-5,'b',g,'middle');
+    });
+    txt(n,x+52,H+20,'sm',g,'middle');
+  });
+  el('line',{x1:x0,x2:x0+4*gw,y1:H-130,y2:H-130,stroke:'var(--sp)','stroke-width':2,'stroke-dasharray':'6 4'},g);
+  txt('SP = 100%',x0+2,H-136,'b',g,'start');
+  el('rect',{x:x0,y:H+34,width:12,height:12,rx:3,fill:'var(--m)'},g);txt('DRO-M',x0+17,H+44,'sm',g);
+  el('rect',{x:x0+80,y:H+34,width:12,height:12,rx:3,fill:'var(--w)'},g);txt('DRO-W',x0+97,H+44,'sm',g);
+})();
+
+/* theme toggle (per viewer, optional) */
+$('theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark'};
+</script>
