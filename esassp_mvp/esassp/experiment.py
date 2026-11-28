@@ -66,7 +66,8 @@ def eval_record(inst: Instance, r: Result, scen: Dict[float, Any], sp_tc: Option
 
 
 def run_experiment(inst: Instance, params: Params, models=("SP", "DRO-M", "DRO-W"), baselines: bool = True,
-                   n_oos: int = 5000, seed: int = 123, log=print, deltas=DELTAS) -> Dict[str, Any]:
+                   n_oos: int = 5000, seed: int = 123, log=print, deltas=DELTAS,
+                   baseline_time_limit: Optional[float] = None) -> Dict[str, Any]:
     t0 = time.time()
     scen = {dl: sample_scenarios(inst, n_oos, np.random.default_rng(seed + int(dl * 100)), delta=dl) for dl in deltas}
     runs: Dict[str, Result] = {}
@@ -76,10 +77,13 @@ def run_experiment(inst: Instance, params: Params, models=("SP", "DRO-M", "DRO-W
         log(f"    {m}: obj {runs[m].objective:.1f} LB {runs[m].lower_bound:.1f} gap {100 * runs[m].gap:.2f}% "
             f"{runs[m].time:.1f}s scheduled {runs[m].solution.n_scheduled()}")
     if baselines:
+        import dataclasses
+        bp = dataclasses.replace(params, time_limit=min(params.time_limit, baseline_time_limit or params.time_limit),
+                                 master_time=min(params.master_time, baseline_time_limit or params.master_time))
         for m in [x for x in ("SP", "DRO-M") if x in models]:
             for tag, kw in (("w/o downstream", dict(downstream=False)), ("w/o scheduling", dict(scheduling=False))):
                 log(f"  solving {m} {tag} ...")
-                runs[f"{m} {tag}"] = solve(inst, m, params, **kw)
+                runs[f"{m} {tag}"] = solve(inst, m, bp, **kw)
     ev: Dict[str, Any] = {}
     tc_sp = None
     if "SP" in runs:

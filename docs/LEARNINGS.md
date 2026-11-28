@@ -11,6 +11,7 @@ used as the yardstick.
 | Piece | MVP #1 (`orsched/`) | MVP #2 (`esassp/`) |
 |---|---|---|
 | Paper | Hashemi Doulabi, Rousseau, Pesant, IJOC 2016 — CP-based B&P&C for OR planning & scheduling | Shehadeh, Tsang, Padman, Kilic, EJOR 329 (2026) 288–307 — OR-to-downstream elective surgery planning under uncertainty (ESASSP, DRO) |
+| Location | repo root (`orsched/`, `app.py`, `web/`) | **independent project** `esassp_mvp/` (own README, requirements, tests, docs) |
 | Package | `orsched/` (model, generator, master, pricing, cuts, bpc, compact, validate, kpi, dataio) | `esassp/` (model, generator, evaluate, milp, formulations, subproblems, sp, dro, validate, kpi, dataio) |
 | Dashboard | `app.py` Streamlit, 6 tabs | `app_esassp.py` Streamlit, 6 tabs |
 | Static artifact | `web/index.html` + precomputed `scenarios.json` | `web_esassp/index.html` + precomputed `results.json` |
@@ -114,3 +115,10 @@ ward LOS l^w. Models: **SP** (SAA), **DRO-M** (mean-support ambiguity), **DRO-W*
   choice for SP/DRO-W, not as a pure speed-up.
 * Test-writing: my own reference LP had a sign error (idle row) — a failing cross-check can be the *reference*; derive
   the oracle independently and re-derive it when it disagrees.
+
+### Workflow decisions for MVP #2 (user instructions)
+* Each paper = an **independent project folder** (`esassp_mvp/`), same recipe as MVP #1 but nothing shared in code.
+* **Write many tests** (user asked explicitly): 248 tests — hand-computed cases, MILP-vs-enumeration, strong duality against primal LPs,
+  parametrised random instances, toggles, experiment JSON, headless Streamlit (`streamlit.testing.v1.AppTest`).
+* Long benchmarks: run in the background with a JSONL checkpoint per instance (`benchmarks/run_experiments.py`), 2 workers.
+* Details: `esassp_mvp/docs/NOTES.md`.
