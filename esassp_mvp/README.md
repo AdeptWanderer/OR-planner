@@ -171,8 +171,8 @@ Instances follow the paper's recipe but are **synthetic and much smaller** than 
 
 * **Integration matters** — ignoring the ICU/ward capacity ("w/o downstream") schedules far more surgeries and costs **+13 % to +36 %** more out of
   sample on the tight-bed cardiac instances (paper: 24–60 % on much larger instances); it is harmless when beds are ample (`general-*`).
-* **Robustness shows under distribution shift**, not in-sample: at Δ = 0 SP, DRO-M and DRO-W cost about the same (within ±3 %), but at Δ = 0.5
-  DRO plans are cheaper than SP on 5 of 8 instances (e.g. cardiac-24: 55.3 k / 57.9 k vs 58.5 k) and have lower or equal worst-day ICU exceedance
+* **Robustness shows under distribution shift**, not in-sample: at Δ = 0 SP, DRO-M and DRO-W cost about the same (within about 5 %), but at Δ = 0.5
+  DRO-M plans are cheaper than SP on 6 of 8 instances (e.g. cardiac-24: 55.3 k vs 58.5 k; DRO-W 57.9 k) and have lower or equal worst-day ICU exceedance
   (cardiac-12: 0.00 vs 0.24 at Δ = 0.2). They schedule the same or fewer surgeries, as in the paper.
 * **"w/o scheduling"** (start times = cumulative mean durations) is only mildly worse here (0–14 %); the paper's large waiting-time effect needs bigger blocks.
 * **Solver performance (HiGHS, 100 s, 2 threads)**: SP solves to < 0.2 % gap in seconds; DRO-W reaches ≤ 3 % on every instance; **DRO-M did not close the
