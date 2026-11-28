@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "topic": "integrated operating-room planning and scheduling; branch-and-price; column generation",
+    "created": "2026-11-28",
+    "verification_legend": {
+      "P": "primary text read in this project",
+      "S": "seen via search-engine summary of abstract/record; full text NOT read",
+      "R": "mentioned only in another source's reference list or snippet"
+    },
+    "note": "All numbers under 'claims' are as reported by the cited source or its search summary unless verification is P. Do not cite without checking the paper.",
+    "companion": "docs/research/or-planning-literature.md"
+  },
+  "papers": [
+    {
+      "id": "hrp2016",
+      "title": "A Constraint-Programming-Based Branch-and-Price-and-Cut Approach for Operating Room Planning and Scheduling",
+      "authors": ["S. H. Hashemi Doulabi", "L.-M. Rousseau", "G. Pesant"],
+      "year": 2016, "venue": "INFORMS Journal on Computing 28(3):432-448", "doi": "10.1287/ijoc.2015.0686",
+      "tags": ["core", "branch-and-price-and-cut", "constraint-programming", "dominance-rules", "cover-cuts"],
+      "verification": "P", "have_pdf": true, "request_priority": null,
+      "claims": ["average optimality gap 2.81% on generated instances of 40-120 cases", "names stochastic durations/emergencies and tactical-operational integration as future work"],
+      "relevance": "The paper this repository reproduces."
+    },
+    {
+      "id": "hrp2014",
+      "title": "A constraint programming-based column generation approach for operating room planning and scheduling",
+      "authors": ["S. H. Hashemi Doulabi", "L.-M. Rousseau", "G. Pesant"],
+      "year": 2014, "venue": "CPAIOR 2014, LNCS 8451, pp. 455-463", "doi": null,
+      "tags": ["precursor"], "verification": "S", "have_pdf": false, "request_priority": null,
+      "claims": ["conference precursor; column generation only"], "relevance": "Earlier version of the 2016 method."
+    },
+    {
+      "id": "roshanaei2021",
+      "title": "Solving integrated operating room planning and scheduling: Logic-based Benders decomposition versus Branch-Price-and-Cut",
+      "authors": ["V. Roshanaei", "B. Naderi"],
+      "year": 2021, "venue": "European Journal of Operational Research 293(1):65-78", "doi": "10.1016/j.ejor.2020.12.004",
+      "tags": ["competitor", "logic-based-benders", "branch-and-check", "same-dataset-as-hrp2016"],
+      "verification": "S", "have_pdf": false, "request_priority": 1,
+      "claims": ["best Benders variant avg gap 0.88% vs 2.81% for the 2016 branch-price-and-cut", "new MIP avg gap 3.84% vs 11.84% for the CP-IP model"],
+      "relevance": "Direct head-to-head with the 2016 algorithm; suggests a stronger baseline (LBBD)."
+    },
+    {
+      "id": "dolatkhah2026",
+      "title": "A Reinforcement-learning-based Column Generation Algorithm for Integrated Operating Room Planning and Scheduling",
+      "authors": ["M. Dolatkhah", "H. Hashemi Doulabi", "W. Rei", "M. Gendreau"],
+      "year": 2026, "venue": "arXiv 2604.22977", "arxiv": "2604.22977",
+      "tags": ["follow-up", "reinforcement-learning", "genetic-algorithm", "column-generation", "overtime"],
+      "verification": "S", "have_pdf": false, "request_priority": 2,
+      "claims": ["new MIP with mandatory/elective surgeries, overtime and surgeon daily availability", "RL + GA generate initial columns", "UNVERIFIED snippet: 4.13% deviation for same-day emergency insertion (possibly mis-attributed)"],
+      "relevance": "Same research group; direct follow-up. Compare initial-column strategy with our day-decomposition plan."
+    },
+    {
+      "id": "bargetto2023",
+      "title": "A branch-and-price-and-cut algorithm for operating room scheduling under human resource constraints",
+      "authors": ["Bargetto", "Garaix", "Xie"],
+      "year": 2023, "venue": "Computers & Operations Research 152:106136", "doi": "10.1016/j.cor.2022.106136", "hal": "hal-04609352",
+      "tags": ["competitor", "label-correcting", "benders-cuts", "nurses", "infection-cleaning"],
+      "verification": "S", "have_pdf": false, "request_priority": 3,
+      "claims": ["pricing is single-room scheduling with time-dependent costs and sequence-dependent cleaning, solved by label-correcting with label dominance and bounds", "Benders-inspired cuts tighten the LP"],
+      "relevance": "Alternative (labeling) pricing; adds human resources."
+    },
+    {
+      "id": "koutecka2025",
+      "title": "A machine learning approach to rank pricing problems in branch-and-price",
+      "authors": ["P. Koutecká", "P. Šůcha", "J. Hůla", "B. Maenhout"],
+      "year": 2025, "venue": "European Journal of Operational Research 320(2):328-342", "doi": null,
+      "tags": ["machine-learning", "pricing", "branch-and-price", "OR-scheduling"],
+      "verification": "S", "have_pdf": false, "request_priority": 4,
+      "claims": ["learned ranker orders pricing problems from the master solution", "outperformed traditional strategies in time, pricing problems solved, nodes and CG iterations (per abstract)"],
+      "relevance": "Pricing is our scaling bottleneck at 300 cases / 10 days."
+    },
+    {
+      "id": "akbarzadeh2025",
+      "title": "(patient planning and surgeon scheduling; branch-price-and-cut with intelligent branching)",
+      "authors": ["Akbarzadeh", "Maenhout"],
+      "year": 2025, "venue": "European Journal of Operational Research 322(2):448-466", "doi": null,
+      "tags": ["branch-price-and-cut", "surgeon-scheduling"], "verification": "R", "have_pdf": false, "request_priority": 5,
+      "claims": ["title not retrieved; described only in a search summary"], "relevance": "Neighbouring B&P&C work with a new branching scheme."
+    },
+    {
+      "id": "xu_dro",
+      "title": "Distributionally robust multi-period operating room scheduling with multiple surgical disciplines under uncertain surgery durations",
+      "authors": ["X. Xu", "Y. Yin", "D. Wang"],
+      "year": null, "venue": "not retrieved (PolyU research portal record)", "doi": null,
+      "tags": ["uncertainty", "distributionally-robust", "branch-price-and-cut", "bidirectional-DP-pricing"],
+      "verification": "S", "have_pdf": false, "request_priority": 6,
+      "claims": ["DR chance constraints on session capacity", "branch-and-price-and-cut with bounded bidirectional DP pricing", "beats CPLEX, stochastic counterpart and two heuristic rules (per abstract)"],
+      "relevance": "Published way to handle our duration-overrun sensitivity."
+    },
+    {
+      "id": "wang2024",
+      "title": "(distributionally robust surgery scheduling with elective and emergency patients)",
+      "authors": ["Y. Wang", "Y. Zhang", "J. Tang"],
+      "year": 2024, "venue": "European Journal of Operational Research 314(2):509-522", "doi": null,
+      "tags": ["uncertainty", "emergency", "Wasserstein", "branch-and-cut"], "verification": "S", "have_pdf": false, "request_priority": 9,
+      "claims": ["reserved emergency capacity; DRO; branch-and-cut; real data"], "relevance": "Emergency arrivals."
+    },
+    {
+      "id": "mueller2026",
+      "title": "Exact Branch-and-Price Algorithm for Live Operating Room Reoptimization",
+      "authors": ["A. Müller", "L. Moreno", "S. Weiland"],
+      "year": 2026, "venue": "Optimization Online (July 2026)", "doi": null,
+      "tags": ["reoptimization", "bucket-graph-labeling", "pruning"], "verification": "S", "have_pdf": false, "request_priority": 7,
+      "claims": ["bucket-graph labeling pricing", "exact pruning: surgical case blocking, completion bounds, preserving LP optimality"],
+      "relevance": "Live rescheduling; fast labeling pricing."
+    },
+    {
+      "id": "bilevel2025",
+      "title": "A Bilevel Approach to Integrated Surgeon Scheduling and Surgery Planning solved via Branch-and-Price",
+      "authors": [], "year": 2025, "venue": "arXiv 2509.24806", "arxiv": "2509.24806",
+      "tags": ["bilevel", "branch-and-price", "surgeon-scheduling"], "verification": "S", "have_pdf": false, "request_priority": 8,
+      "claims": ["abstract not retrieved; authors not confirmed"], "relevance": "Stakeholder-aware integrated model."
+    },
+    {
+      "id": "weekend2026",
+      "title": "Integrated Surgical Scheduling with Weekend Bed Occupancy Management: A Column Generation Approach",
+      "authors": [], "year": 2026, "venue": "arXiv 2608.11018", "arxiv": "2608.11018",
+      "tags": ["beds", "weekend", "master-surgical-schedule", "column-generation-heuristic"], "verification": "S", "have_pdf": false, "request_priority": 8,
+      "claims": ["MSS + surgeon/patient-to-block + sequencing + weekday/weekend bed occupancy; MILP + column-generation heuristic (per paper's own table as seen in a snippet)"],
+      "relevance": "Downstream beds."
+    },
+    {
+      "id": "andam2026",
+      "title": "Operating room planning with pooling downstream beds among specialties: A stochastic programming approach",
+      "authors": ["A. Andam", "H. Hashemi Doulabi"], "year": 2026, "venue": "arXiv 2602.15269", "arxiv": "2602.15269",
+      "tags": ["beds", "stochastic-programming", "sample-average-approximation"], "verification": "S", "have_pdf": false, "request_priority": null,
+      "claims": ["two-stage SAA", "full pooling improves performance by up to 19.53% (as reported)"], "relevance": "Downstream capacity."
+    },
+    {
+      "id": "alamin2025",
+      "title": "(comprehensive review on operating room scheduling and optimization, literature 2000-2023)",
+      "authors": ["Al Amin", "Baldacci", "Kayvanfar"], "year": 2025, "venue": "Operational Research 25", "doi": "10.1007/s12351-024-00884-z",
+      "tags": ["survey"], "verification": "S", "have_pdf": false, "request_priority": 10,
+      "claims": ["six groups by planning horizon; flags uncertainty handling as open"], "relevance": "Current survey."
+    },
+    {
+      "id": "cardoen2010",
+      "title": "Operating room planning and scheduling: A literature review",
+      "authors": ["Cardoen", "Demeulemeester", "Beliën"], "year": 2010, "venue": "European Journal of Operational Research", "doi": null,
+      "tags": ["survey", "classic"], "verification": "R", "have_pdf": false, "request_priority": 11,
+      "claims": ["classic review cited by many later papers (title as commonly cited; not checked)"], "relevance": "Background."
+    },
+    {
+      "id": "guo2019",
+      "title": "Logic-based Benders Decomposition and Binary Decision Diagram Based Approaches for Stochastic Distributed Operating Room Scheduling",
+      "authors": ["Guo", "Bodur", "Aleman", "Urbach"], "year": 2019, "venue": "arXiv 1907.13265", "arxiv": "1907.13265",
+      "tags": ["stochastic", "logic-based-benders", "BDD"], "verification": "S", "have_pdf": false, "request_priority": null,
+      "claims": ["LBBD cuts and BDD-based Benders cuts for stochastic distributed OR scheduling"], "relevance": "Benders alternative under uncertainty."
+    },
+    {
+      "id": "ml_cg_cluster",
+      "title": "ML for column generation (cluster of papers)",
+      "authors": ["Yuan, Fang, Song (AAAI 2024)", "Morabit, Desaulniers, Lodi", "Shen et al.", "Babaki, Jena, Charlin"], "year": null, "venue": "various", "doi": null,
+      "tags": ["machine-learning", "column-selection", "stabilization", "dual-prediction"], "verification": "S", "have_pdf": false, "request_priority": null,
+      "claims": ["Morabit et al.: up to 30% computing-time gain on VRPTW (as reported)"], "relevance": "General techniques that could transfer to OR pricing."
+    }
+  ]
+}
