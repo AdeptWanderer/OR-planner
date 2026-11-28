@@ -89,7 +89,7 @@ function schedule(v,R,dl){
   v.appendChild(el('div',{class:'panel'},`<div class="legend">${leg}<span>pale = time allocated until next start, solid = expected duration</span></div>${s}<p class="note"><b>Postponed (${run.postponed.length}):</b> ${post}</p>`));
 }
 function lineChart(series,beds,qlo,qhi,color,title){
-  const W=480,H=230,l=34,b=24,n=beds.length,top=Math.max(...beds,...series,...qhi)+1,sx=i=>l+(W-l-8)*i/(n-1),sy=v=>H-b-(H-b-12)*v/top;
+  const W=480,H=230,l=34,b=24,n=beds.length,top=Math.max(...beds,...series,...qhi)+1,sx=i=>l+(W-l-24)*i/(n-1),sy=v=>H-b-(H-b-12)*v/top;
   let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${title}">`;
   for(let t=0;t<=top;t+=Math.ceil(top/5))s+=`<line x1="${l}" x2="${W-8}" y1="${sy(t)}" y2="${sy(t)}" stroke="var(--line)"/><text x="${l-5}" y="${sy(t)+4}" text-anchor="end">${t}</text>`;
   s+=`<path d="M${qhi.map((v,i)=>sx(i)+','+sy(v)).join('L')}L${qlo.map((v,i)=>[sx(n-1-i),sy(qlo[n-1-i])]).join('L')}Z" fill="${color}" opacity=".15"/>`;
@@ -112,13 +112,13 @@ function beds(v,R,dl){
 }
 function compare(v,R,dl){
   const names=Object.keys(R.runs),rows=names.map(n=>{const e=R.eval[n][dl],r=R.runs[n];return {n,sch:r.scheduled,tc:e.mean_total_cost,q90:e.q90_total_cost,pi:e.mean_pe_icu,pw:e.mean_pe_ward,w:e.mean_wait_min,id:e.mean_idle_min/60,rt:e.rel_tc_vs_sp,ri:e.rel_tc_vs_integrated,t:r.time,g:r.gap}});
-  const best=Math.min(...rows.map(r=>r.tc));
+  const best=Math.min(...rows.filter(r=>!r.n.includes(' ')).map(r=>r.tc));
   v.appendChild(el('div',{class:'panel'},`<table><tr><th>Plan</th><th>Scheduled</th><th>Mean cost</th><th>90th pct</th><th>ICU PE</th><th>Ward PE</th><th>Wait (min)</th><th>Idle (h)</th><th>RelTC vs SP</th><th>RelTC vs integrated</th><th>Solve s</th><th>Gap</th></tr>
   ${rows.map(r=>`<tr class="${r.tc===best?'best':''}"><td><span class="pill" style="border-color:${MCOL(r.n)}">${r.n}</span></td><td>${r.sch}</td><td>${fmt(r.tc)}</td><td>${fmt(r.q90)}</td><td>${fmt(r.pi,3)}</td><td>${fmt(r.pw,3)}</td><td>${fmt(r.w)}</td><td>${fmt(r.id,1)}</td><td>${r.rt==null?'–':fmt(r.rt,2)}</td><td>${r.ri==null?'–':fmt(r.ri,2)}</td><td>${fmt(r.t,0)}</td><td>${fmt(100*r.g,2)}%</td></tr>`).join('')}</table>
-  <p class="note">Highlighted = lowest mean out-of-sample cost at Δ=${dl}. RelTC = (TC<sub>other</sub> − TC<sub>this</sub>)/TC<sub>this</sub> as in the paper. “w/o downstream” ignores ICU/ward capacity; “w/o scheduling” ignores start times (mean-duration allocation).</p>`));
-  const W=480,H=210,l=48,b=26,pts=['0.0','0.2','0.5'],all=names.flatMap(n=>pts.map(p=>R.eval[n][p].mean_total_cost)),top=Math.max(...all)*1.05,lo=Math.min(...all)*.95;
-  const sx=i=>l+(W-l-10)*i/2,sy=x=>H-b-(H-b-10)*(x-lo)/(top-lo);let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cost vs shift">`;
-  for(let k=0;k<=4;k++){const x=lo+(top-lo)*k/4;s+=`<line x1="${l}" x2="${W-10}" y1="${sy(x)}" y2="${sy(x)}" stroke="var(--line)"/><text x="${l-5}" y="${sy(x)+4}" text-anchor="end">${fmt(x/1000)}k</text>`}
+  <p class="note">Highlighted = lowest mean out-of-sample cost among SP / DRO-M / DRO-W at Δ=${dl}. Highlight compares the three integrated models only. <b>RelTC vs SP</b> = (TC<sub>SP</sub> − TC<sub>this</sub>)/TC<sub>this</sub> (positive: SP is more expensive); <b>vs integrated</b> = (TC<sub>this</sub> − TC<sub>integrated</sub>)/TC<sub>integrated</sub> (positive: ignoring that part of the problem costs more). “w/o downstream” ignores ICU/ward capacity; “w/o scheduling” ignores start times (mean-duration allocation).</p>`));
+  const W=560,H=240,l=48,b=26,pts=['0.0','0.2','0.5'],all=names.flatMap(n=>pts.map(p=>R.eval[n][p].mean_total_cost)),top=Math.max(...all)*1.05,lo=Math.min(...all)*.95;
+  const sx=i=>l+(W-l-40)*i/2,sy=x=>H-b-(H-b-10)*(x-lo)/(top-lo);let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:640px" role="img" aria-label="Cost vs shift">`;
+  for(let k=0;k<=4;k++){const x=lo+(top-lo)*k/4;s+=`<line x1="${l}" x2="${W-10}" y1="${sy(x)}" y2="${sy(x)}" stroke="var(--line)"/><text x="${l-5}" y="${sy(x)+4}" text-anchor="end">${fmt(x/1000,1)}k</text>`}
   names.forEach(n=>{s+=`<path d="M${pts.map((p,i)=>sx(i)+','+sy(R.eval[n][p].mean_total_cost)).join('L')}" fill="none" stroke="${MCOL(n)}" stroke-width="2.2" ${n.includes(' ')?'stroke-dasharray="4 3"':''}><title>${n}</title></path>`});
   pts.forEach((p,i)=>s+=`<text x="${sx(i)}" y="${H-8}" text-anchor="middle">Δ=${p}</text>`);
   v.appendChild(el('div',{class:'panel'},`<b>Cost when real stays are longer than assumed</b><div class="legend">${names.map(n=>`<span><i style="background:${MCOL(n)}"></i>${n}</span>`).join('')}</div>${s+'</svg>'}`));

@@ -112,11 +112,18 @@ def generate_instance(n_surgeries: int = 24, library: str = "cardiac", seed: int
         for j in order:
             if by_type[j]:
                 seq.append(by_type[j].pop())
+    slot_types: List[List[int]] = [[j] for j in seq]
+    present = [j for j in range(nt) if cnt[j] > 0]
+    for j in present:                       # fewer blocks than types: leftover types share the least loaded block (open block)
+        if not any(j in t for t in slot_types):
+            load = [sum(cnt[x] * summ[x]["mu_d"] for x in t) for t in slot_types]
+            slot_types[int(np.argmin(load))].append(j)
     blocks: List[Block] = []
-    for (d, r), j in zip(slots, seq):
-        lo = summ[j]["lo_d"]
-        K = int(max(1, min(max_positions, cnt[j], math.floor(block_minutes / max(lo, 1.0)))))
-        blocks.append(Block(len(blocks), d, r, block_minutes, K, (j,)))
+    for (d, r), ts in zip(slots, slot_types):
+        lo = min(summ[j]["lo_d"] for j in ts)
+        ncls = sum(cnt[j] for j in ts)
+        K = int(max(1, min(max_positions, ncls, math.floor(block_minutes / max(lo, 1.0)))))
+        blocks.append(Block(len(blocks), d, r, block_minutes, K, tuple(sorted(ts))))
     if isinstance(beds, str):
         (iw, ie), (ww, we) = BED_PRESETS[beds]
     else:

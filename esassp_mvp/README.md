@@ -23,7 +23,7 @@ plus the paper's **non-integrated baselines** (ignore the downstream units / ign
 cd esassp_mvp
 pip install -r requirements.txt
 streamlit run app.py              # dashboard at http://localhost:8501
-python -m pytest -q tests         # 248 tests, ~1 min
+python -m pytest -q tests         # 401 tests, ~1 min
 ```
 
 Open `web/index.html` in a browser for the static dashboard built from the precomputed benchmark runs.
@@ -71,7 +71,7 @@ esassp/
   experiment.py   one-instance experiment (models x baselines x mis-specification) -> JSON record
   kpi.py, dataio.py, validate.py
 app.py            Streamlit dashboard          web/index.html  static dashboard
-tests/            248 tests                    benchmarks/     experiment grid, table + web builders
+tests/            401 tests                    benchmarks/     experiment grid, table + web builders
 ```
 
 ### Algorithm, as implemented
@@ -88,7 +88,7 @@ tests/            248 tests                    benchmarks/     experiment grid, 
 5. **Bounds**: LB = dual bound of the master, UB = master objective with the δ's replaced by the true separation values; stop at the target gap.
 6. **DRO-W**: one multiplier ν for the duration ball and one for the LOS ball; cuts for every (sample n, scenario r) share the recourse copy of r.
 
-## Validation (what the 248 tests check)
+## Validation (what the 401 tests check)
 
 * closed-form `Q^BC` equals the LP of (4b)–(4e) on random data; hand-computed waiting / overtime / idle / bed examples;
 * first-stage MILP solutions always pass the independent validator; recourse copies in the MILP equal the oracle for fixed (x, s);
@@ -105,7 +105,81 @@ tests/            248 tests                    benchmarks/     experiment grid, 
 `python benchmarks/run_experiments.py <part> <n_parts> <out.jsonl>` then `python benchmarks/build_web.py`. Out-of-sample: 5 000 simulated weeks.
 Instances follow the paper's recipe but are **synthetic and much smaller** than R-70 / Case-100 (the paper used CPLEX on 16 cores).
 
-<!--TABLES-->
+| Instance | Model | Scheduled | Solve s | Gap % | Mean cost Δ=0 | Mean cost Δ=0.5 | max ICU PE (Δ=0.2) | RelTC vs SP (Δ=0) |
+|---|---|---|---|---|---|---|---|---|
+| cardiac-12-b52-c1 (I=12) | SP | 7 | 0 | 0.00 | 28,436 | 31,112 | 0.24 |  |
+| cardiac-12-b52-c1 (I=12) | DRO-M | 5 | 1 | 0.04 | 28,404 | 29,725 | 0.00 | 0.00 |
+| cardiac-12-b52-c1 (I=12) | DRO-W | 5 | 3 | 0.02 | 28,076 | 29,383 | 0.00 | 0.01 |
+| cardiac-16-b52-c1 (I=16) | SP | 5 | 0 | 0.00 | 28,136 | 29,439 | 0.00 |  |
+| cardiac-16-b52-c1 (I=16) | DRO-M | 5 | 1 | 0.02 | 28,496 | 29,782 | 0.00 | -0.01 |
+| cardiac-16-b52-c1 (I=16) | DRO-W | 5 | 2 | 0.11 | 28,226 | 29,524 | 0.00 | -0.00 |
+| cardiac-20-b107-c1 (I=20) | SP | 18 | 2 | 0.00 | 35,595 | 41,599 | 0.02 |  |
+| cardiac-20-b107-c1 (I=20) | DRO-M | 16 | 100 | 16.06 | 37,250 | 41,561 | 0.00 | -0.04 |
+| cardiac-20-b107-c1 (I=20) | DRO-W | 16 | 92 | 0.11 | 36,453 | 41,433 | 0.00 | -0.02 |
+| cardiac-20-b52-c1 (I=20) | SP | 12 | 1 | 0.13 | 53,629 | 58,334 | 0.84 |  |
+| cardiac-20-b52-c1 (I=20) | DRO-M | 10 | 100 | 3.58 | 54,602 | 56,041 | 0.75 | -0.02 |
+| cardiac-20-b52-c1 (I=20) | DRO-W | 11 | 100 | 1.94 | 53,263 | 55,877 | 0.84 | 0.01 |
+| cardiac-20-b52-c2 (I=20) | SP | 18 | 1 | 0.01 | 141,435 | 163,973 | 0.99 |  |
+| cardiac-20-b52-c2 (I=20) | DRO-M | 18 | 100 | 5.74 | 146,155 | 168,259 | 1.00 | -0.03 |
+| cardiac-20-b52-c2 (I=20) | DRO-W | 18 | 45 | 0.17 | 142,839 | 165,407 | 0.99 | -0.01 |
+| cardiac-24-b52-c1 (I=24) | SP | 12 | 3 | 0.17 | 54,126 | 58,540 | 0.98 |  |
+| cardiac-24-b52-c1 (I=24) | DRO-M | 10 | 100 | 4.01 | 54,127 | 55,342 | 0.74 | -0.00 |
+| cardiac-24-b52-c1 (I=24) | DRO-W | 12 | 100 | 2.90 | 53,807 | 57,850 | 0.99 | 0.01 |
+| general-20-b52-c1 (I=20) | SP | 19 | 1 | 0.15 | 57,675 | 66,118 | 0.00 |  |
+| general-20-b52-c1 (I=20) | DRO-M | 17 | 100 | 6.29 | 58,115 | 63,821 | 0.00 | -0.01 |
+| general-20-b52-c1 (I=20) | DRO-W | 18 | 68 | 0.18 | 57,958 | 65,365 | 0.00 | -0.00 |
+| general-30-b107-c1 (I=30) | SP | 30 | 4 | 0.14 | 36,213 | 47,026 | 0.00 |  |
+| general-30-b107-c1 (I=30) | DRO-M | 30 | 100 | 27.67 | 35,774 | 45,942 | 0.00 | 0.01 |
+| general-30-b107-c1 (I=30) | DRO-W | 30 | 70 | 0.00 | 35,445 | 46,699 | 0.00 | 0.02 |
+
+| Instance | Variant | Scheduled | mean cost Δ=0 | RelTC w/o vs integrated (Δ=0) |
+|---|---|---|---|---|
+| cardiac-12-b52-c1 | SP w/o downstream | 11 | 32,874 | 0.16 |
+| cardiac-12-b52-c1 | SP w/o scheduling | 8 | 29,497 | 0.04 |
+| cardiac-12-b52-c1 | DRO-M w/o downstream | 11 | 34,020 | 0.20 |
+| cardiac-12-b52-c1 | DRO-M w/o scheduling | 5 | 28,071 | -0.01 |
+| cardiac-16-b52-c1 | SP w/o downstream | 11 | 32,926 | 0.17 |
+| cardiac-16-b52-c1 | SP w/o scheduling | 5 | 28,129 | -0.00 |
+| cardiac-16-b52-c1 | DRO-M w/o downstream | 11 | 34,240 | 0.20 |
+| cardiac-16-b52-c1 | DRO-M w/o scheduling | 5 | 28,129 | -0.01 |
+| cardiac-20-b107-c1 | SP w/o downstream | 19 | 40,218 | 0.13 |
+| cardiac-20-b107-c1 | SP w/o scheduling | 18 | 36,114 | 0.01 |
+| cardiac-20-b107-c1 | DRO-M w/o downstream | 19 | 39,358 | 0.06 |
+| cardiac-20-b107-c1 | DRO-M w/o scheduling | 18 | 36,114 | -0.03 |
+| cardiac-20-b52-c1 | SP w/o downstream | 19 | 69,591 | 0.30 |
+| cardiac-20-b52-c1 | SP w/o scheduling | 12 | 53,799 | 0.00 |
+| cardiac-20-b52-c1 | DRO-M w/o downstream | 19 | 68,104 | 0.25 |
+| cardiac-20-b52-c1 | DRO-M w/o scheduling | 10 | 54,218 | -0.01 |
+| cardiac-20-b52-c2 | SP w/o downstream | 19 | 144,703 | 0.02 |
+| cardiac-20-b52-c2 | SP w/o scheduling | 19 | 140,859 | -0.00 |
+| cardiac-20-b52-c2 | DRO-M w/o downstream | 19 | 148,390 | 0.02 |
+| cardiac-20-b52-c2 | DRO-M w/o scheduling | 18 | 143,986 | -0.01 |
+| cardiac-24-b52-c1 | SP w/o downstream | 21 | 71,618 | 0.32 |
+| cardiac-24-b52-c1 | SP w/o scheduling | 12 | 56,329 | 0.04 |
+| cardiac-24-b52-c1 | DRO-M w/o downstream | 21 | 73,841 | 0.36 |
+| cardiac-24-b52-c1 | DRO-M w/o scheduling | 10 | 54,350 | 0.00 |
+| general-20-b52-c1 | SP w/o downstream | 20 | 58,170 | 0.01 |
+| general-20-b52-c1 | SP w/o scheduling | 19 | 61,390 | 0.06 |
+| general-20-b52-c1 | DRO-M w/o downstream | 20 | 60,526 | 0.04 |
+| general-20-b52-c1 | DRO-M w/o scheduling | 19 | 59,871 | 0.03 |
+| general-30-b107-c1 | SP w/o downstream | 30 | 35,568 | -0.02 |
+| general-30-b107-c1 | SP w/o scheduling | 30 | 40,551 | 0.12 |
+| general-30-b107-c1 | DRO-M w/o downstream | 30 | 35,774 | 0.00 |
+| general-30-b107-c1 | DRO-M w/o scheduling | 30 | 40,850 | 0.14 |
+
+**How to read this (measured, not the paper's numbers)**
+
+* **Integration matters** — ignoring the ICU/ward capacity ("w/o downstream") schedules far more surgeries and costs **+13 % to +36 %** more out of
+  sample on the tight-bed cardiac instances (paper: 24–60 % on much larger instances); it is harmless when beds are ample (`general-*`).
+* **Robustness shows under distribution shift**, not in-sample: at Δ = 0 SP, DRO-M and DRO-W cost about the same (within ±3 %), but at Δ = 0.5
+  DRO plans are cheaper than SP on 5 of 8 instances (e.g. cardiac-24: 55.3 k / 57.9 k vs 58.5 k) and have lower or equal worst-day ICU exceedance
+  (cardiac-12: 0.00 vs 0.24 at Δ = 0.2). They schedule the same or fewer surgeries, as in the paper.
+* **"w/o scheduling"** (start times = cumulative mean durations) is only mildly worse here (0–14 %); the paper's large waiting-time effect needs bigger blocks.
+* **Solver performance (HiGHS, 100 s, 2 threads)**: SP solves to < 0.2 % gap in seconds; DRO-W reaches ≤ 3 % on every instance; **DRO-M did not close the
+  gap within 100 s for I ≥ 20 (3.6–28 %)**, the opposite of the paper's finding that DRO-M is the fastest DRO model (CPLEX, 16 cores, hours). The master
+  MILP dominates run time (separation < 0.3 s); the DRO-M gap is an upper-bound-side effect of the time limit (the returned plans are feasible and evaluated out of sample).
+* Differences between plans at Δ = 0 are small relative to Monte-Carlo noise on these small instances; do not over-interpret single rows.
+
 
 ## Differences from the paper (deliberate or forced)
 
