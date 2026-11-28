@@ -131,3 +131,7 @@ ward LOS l^w. Models: **SP** (SAA), **DRO-M** (mean-support ambiguity), **DRO-W*
   real data tables, the algorithm for the third model, the CPU-time table to benchmark against and sensitivity studies. Deriving the missing algorithm
   independently and verifying it against a primal oracle was still worthwhile: the supplement later confirmed it (Algorithm 2) and the dual (C.4).
 * After reading the supplement: re-check *every* "assumption" in the README/notes and upgrade it to "confirmed by Appendix X" or "differs because …".
+* **Long runs: look at the first 15 minutes.** The paper-scale DRO runs were started with a master MIP gap of 0.025 %, which made each master solve
+  take > 15 min (HiGHS, I = 70). C&CG bounds stay valid with a looser master gap (LB = dual bound), so `Params.master_gap = 0.01` is the right default at
+  scale. Also: stream the solver's own log for single-MILP runs (SP), otherwise a 2-hour run is a black box; and a nohup'ed process can disappear silently
+  (SP died with no error) — verify `ps` after launching and keep stdout in a file.

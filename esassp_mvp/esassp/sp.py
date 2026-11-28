@@ -24,7 +24,7 @@ def solve_sp(inst: Instance, params: Params = Params(), scenarios: Scenarios | N
         add_bc_recourse(fs, sc.d[r], prob_obj=1.0 / N, c_w=None if scheduling else 0.0)
         if downstream:
             add_down_recourse(fs, sc.lc[r], sc.lw[r], prob_obj=1.0 / N)
-    res = m.solve(time_limit=params.time_limit, gap=params.gap, threads=params.threads)
+    res = m.solve(time_limit=params.time_limit, gap=params.gap, threads=params.threads, log=params.solver_log)
     if not res.ok:
         raise RuntimeError(f"SP infeasible / no solution: {res.status}")
     sol = fs.extract(res.x)

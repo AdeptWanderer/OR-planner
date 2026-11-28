@@ -21,7 +21,7 @@ def log(s):
     logf.write(f"{time.strftime('%H:%M:%S')} {s}\n"); logf.flush()
 inst = paper_instance(kind, I, beds=beds, cost=cost, seed=seed)
 # seed controls the sampled scenarios (and type counts are deterministic for Case/R); N = 50 as in the paper
-p = Params(n_scenarios=50, time_limit=secs, master_time=min(1800.0, secs / 2), gap=1e-3, threads=1, seed=seed, eps_d=50.0, eps_l=5.0, log=log)
+p = Params(n_scenarios=50, time_limit=secs, master_time=min(600.0, secs / 2), gap=1e-3, master_gap=0.01, threads=1, seed=seed, eps_d=50.0, eps_l=5.0, log=log, solver_log=True)
 log(f"start {tag}: I={inst.I} B={inst.B} time_limit={secs}")
 t = time.time()
 res = solve(inst, model, p, downstream=down, scheduling=sched)

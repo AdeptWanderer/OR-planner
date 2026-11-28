@@ -12,6 +12,7 @@ class Params:
     time_limit: float = 120.0             # total wall-clock budget (s)
     master_time: float = 60.0             # per master solve (s)
     gap: float = 1e-3                     # C&CG / MIP relative gap
+    master_gap: float | None = None       # MIP gap of each master solve (default min(gap/4, 1e-3)); looser = faster iterations, bounds stay valid
     threads: int = 4
     seed: int = 1
     symmetry: bool = True                 # SB constraints (27)-(29)
@@ -21,6 +22,7 @@ class Params:
     eps_l: float = 5.0                    # Wasserstein radius for LOS
     sub_method: str = "auto"              # "enum" | "milp" | "auto" for the BC sub-problem
     max_iter: int = 200
+    solver_log: bool = False              # stream HiGHS' own log (SP extensive form) to stdout
     log: Any = None                       # callable(str)
 
 

@@ -1,2 +1,36 @@
 Running HiGHS 1.16.0 (git hash: f3f113d): Copyright (c) 2026 under MIT licence terms
 Includes third-party software components, see THIRD_PARTY_NOTICES.md for full details
+MIP has 32690 rows; 20090 cols; 696850 nonzeros; 2100 integer variables (2100 binary)
+Coefficient ranges:
+  Matrix  [1e+00, 1e+03]
+  Cost    [3e-01, 2e+01]
+  Bound   [5e+02, 5e+02] (continuous)
+  Bound   [1e+00, 1e+00] (non-continuous)
+  RHS     [1e+00, 1e+03]
+Presolving model
+32690 rows, 20090 cols, 696850 nonzeros 0s
+30618 rows, 19063 cols, 411175 nonzeros 13s
+30407 rows, 19063 cols, 409794 nonzeros 13s
+Presolve reductions: rows 30407(-2283); columns 19063(-1027); nonzeros 409794(-287056) 
+
+Solving MIP model with:
+   30407 rows
+   19063 cols (1190 binary, 0 integer, 672 implied int., 17201 continuous, 0 domain fixed)
+   409794 nonzeros
+   Thread count: 4 available cores, 4 logical processors, using up to 1 workers across 1 threads.
+
+Src: B => Branching; C => Central rounding; F => Feasibility pump; H => Heuristic;
+     I => Shifting; J => Feasibility jump; L => Sub-MIP; P => Empty MIP; R => Randomized rounding;
+     S => Solve LP; T => Evaluate node; U => Unbounded; X => User solution; Y => HiGHS solution;
+     Z => ZI Round; l => Trivial lower; p => Trivial point; u => Trivial upper; z => Trivial zero
+
+        Nodes      |    B&B Tree     |            Objective Bounds              |  Dynamic Constraints |       Work      
+Src  Proc. InQueue |  Leaves   Expl. | BestBound       BestSol              Gap |   Cuts   InLp Confl. | LpIters     Time
+
+ J       0       0         0   0.00%   -inf            2341389.491983     Large        0      0      0         0    18.1s
+         0       0         0   0.00%   313868.27525    2341389.491983    86.59%        0      0      4     13083    33.5s
+         0       0         0   0.00%   314383.237284   2341389.491983    86.57%     3448    181      4     15928    39.4s
+ C       0       0         0   0.00%   314389.664237   380277.832401     17.33%     3788    189      4     16137    45.8s
+         0       0         0   0.00%   314542.414503   380277.832401     17.29%     4945    329      4     18703    52.1s
+         0       0         0   0.00%   314596.93731    380277.832401     17.27%     5959    303      4     20656    57.2s
+         0       0         0   0.00%   314642.389033   380277.832401     17.26%     6830    294      4     22548    63.1s

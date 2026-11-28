@@ -191,7 +191,7 @@ class DROMaster:
 
     # ------------------------------------------------------------------ master solve
     def solve(self, time_limit: float):
-        res = self.m.solve(time_limit=time_limit, gap=min(self.p.gap / 4, 1e-3), threads=self.p.threads)   # no warm start: a partial hint was accepted by HiGHS as an (invalid) incumbent
+        res = self.m.solve(time_limit=time_limit, gap=(self.p.master_gap if self.p.master_gap is not None else min(self.p.gap / 4, 1e-3)), threads=self.p.threads)   # no warm start: a partial hint was accepted by HiGHS as an (invalid) incumbent
         if not res.ok:
             raise RuntimeError(f"master failed: {res.status}")
         sol = self.fs.extract(res.x)
