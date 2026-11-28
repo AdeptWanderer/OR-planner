@@ -95,3 +95,15 @@ ward LOS l^w. Models: **SP** (SAA), **DRO-M** (mean-support ambiguity), **DRO-W*
 
 ## C. Implementation log / pitfalls
 *(filled in while building MVP #2 — see git history)*
+
+### Pitfalls found while building MVP #2 (append-only)
+* **HiGHS `setSolution` with a partial hint is dangerous**: it was accepted as an incumbent and returned an objective
+  *below* the true optimum (C&CG reported UB < LB). Never warm-start a MILP from a partially specified vector unless
+  the result is re-validated. (Symptom to remember: UB < LB or UB below an independent oracle value.)
+* **HiGHS thread scheduler is process-global**: setting `threads` to a different value in a later `Highs()` object raises
+  an error and the solve silently returns "Not Set". Initialise once (`esassp.milp.set_threads`).
+* Bilinear terms `tau_i * dual` linearised with the *dual* bounds derived from the dual feasible set; the resulting MILP
+  matched brute-force enumeration to 1e-9 for both mean-support and Wasserstein — good template for "derive, then check
+  against enumeration".
+* Exact strong-duality test: with (x, s) fixed, C&CG value == moment-LP value over box vertices x integer LOS lattice to
+  1e-4 absolute (34850.4195 both) — this also proves Prop. 5 bounds and inequality (26) do not cut off the optimum.
